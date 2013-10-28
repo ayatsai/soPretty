@@ -1,6 +1,5 @@
 -- assign3.hs
 --
--- Chin-Tsai Tsai 42698100
 
 --rush_hour :: [String] -> [[String]]
 --rush_hour startState = statesearch startState [[]]
@@ -51,37 +50,76 @@
 --	| checkCol currState colIndex  			= concat [moveUp currState rowIndex colIndex, moveDown currState rowIndex colIndex]
 --	| otherwise								= []
 
-getCars :: [String] -> String
-getCars null = []
-getCars (x:xs) = removeduplicates((removeduplicates x):(getCars xs))
+test = getCarStats (getCars ["ddaa","-bbc","---c"]) ["ddaa","-bbc","---c"] 0
 
-removeduplicates :: (Eq a) => [a] -> [a]
+
+
+
+getCars :: [String] -> String
+getCars map 
+	| null map				= []
+	| otherwise				= removeduplicates(getCars (tail map)++(removeduplicates (head map)))
+
+removeduplicates :: String -> String
 removeduplicates (x:xs)
 	| null xs				= x:[]
+	| x == '-'				= removeduplicates xs
 	| elem x xs				= removeduplicates xs
 	| otherwise				= x:removeduplicates xs
 
-
+-- tuple: car [dir row/col]
+getCarStats :: String -> [String] -> Int -> [(Char,[Int])]
+getCarStats cars rows index 
+	| null rows					= []
+	| otherwise					= removeTupleDuplicates((findCars cars (head rows) index)++(getCarStats cars (tail rows) (index+1)))
 	
--- the row to check, and the index to start checking 
-checkHorizontalCar :: Char -> String -> Integer -> Bool
-checkHorizontalCar car row index
-	| null row								= False
-	| index > 0 							= checkHorizontalCar car (tail row) (index - 1)
-	| car == (head row)						= checkHorizontalCarHelper car (tail row)
-	| otherwise								= False
-
-checkHorizontalCarHelper :: Char -> [Char] -> Bool
-checkHorizontalCarHelper car row
-	| car == (head row)						= True
-	| otherwise								= False
+findCars :: String -> String -> Int -> [(Char,[Int])]
+findCars cars row rowIndex 
+	| null cars			= []
+	| countChar (head cars) row > 1		= ((head cars), [1, rowIndex]):(findCars (tail cars) row rowIndex)
+	| countChar (head cars) row == 1 	= ((head cars), [0, (getFirstIndex (head cars) row)]):(findCars (tail cars) row rowIndex)
+	| otherwise							= findCars (tail cars) row rowIndex
 	
--- the rows left to check and the index of the column
-checkVerticalCar :: Char -> [String] -> Integer -> Bool
-checkVerticalCar car map index
-	| getElementOfRow (head map) index == car	= True
-	| otherwise									= False
+removeTupleDuplicates :: [(Char,[Int])] -> [(Char,[Int])]
+removeTupleDuplicates tuple
+	| null tuple								= []
+	| elem (fst (head tuple)) (getKeys (tail tuple))	= removeTupleDuplicates (tail tuple)
+	| otherwise									= (head tuple):removeTupleDuplicates (tail tuple)
 
+getKeys :: [(Char,[Int])] -> [Char]
+getKeys tuple
+	| null tuple						= []
+	| otherwise							= (fst (head tuple)):(getKeys (tail tuple))
+	
+countChar :: (Eq a) => a -> [a] -> Int
+countChar c check
+	| null check 			= 0
+	| head check == c		= 1 + countChar c (tail check)
+	| otherwise				= countChar c (tail check)
+	
+getFirstIndex :: (Eq a) => a -> [a] -> Int
+getFirstIndex c check
+	| null check 			= 0
+	| head check == c		= 0
+	| otherwise				= 1 + getFirstIndex c (tail check)
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+-- not used, delete?
 getElementOfRow :: String -> Integer -> Char
 getElementOfRow row index 
 	| index > 0 								= getElementOfRow (tail row) (index - 1)
