@@ -31,9 +31,54 @@ checkGoal map = ('X' == ((map !! 2) !! 5))
 
 -- generateNewStates
 -- move up
+--MoveUp :: (Char, [Int]) -> [String] -> [String]
+--MoveUp CarTuple Map
+--	| 
+
 -- move down
+
+
+testMoveLeft = moveLeft ('a', [1, 0]) ["-----a","a-----","-aaa--","--aa--","-a-a-a"] 0
+testMoveLeft1 = moveLeft ('a', [1, 1]) ["-----a","a-----","-aaa--","--aa--","-a-a-a"] 0
+testMoveLeft2 = moveLeft ('a', [1, 5]) ["-----a","a-----","-aaa--","--aa--","-a-a-a"] 0
+testMoveLeft3 = moveLeft ('a', [1, 2]) ["-----a","a-----","-aaa-b","-baa--","-a-a-a"] 0
+
 -- move left
+moveLeft :: (Char, [Int]) -> [String] ->  Int -> [String]
+moveLeft carTuple map index
+	| index > 4									= map
+	| carRow !! index == fst carTuple			= map
+	| carRow !! (index + 1) /= fst carTuple 	= moveLeft carTuple map (index + 1)
+	| carRow !! index /= '-' && 
+		carRow !! (index + 1) == fst carTuple	= map
+	| otherwise 								= 
+		moveLeft 
+			carTuple 
+			((nthhead ((snd carTuple !! 1) - 1) map) ++
+			[(nthhead index carRow) ++ 
+			((fst carTuple):'-':(nthtail (index + 2) (carRow)))] ++
+			(nthtail (snd carTuple !! 1 ) map))
+			(index + 1)
+	where carRow = map !! (snd carTuple !! 1)
+
 -- move right
+
+-- Move Helpers
+-- return the elements after the index, not including the index row
+nthtail :: Int -> [a] -> [a]
+nthtail index [] = []
+nthtail index (x:xs)
+	| index == 0				= xs
+	| otherwise					= nthtail (index-1) xs  
+
+-- return the elements before the index, not including the index row
+nthhead :: Int -> [a] -> [a]
+nthhead index [] = []
+nthhead index (x:xs)
+	| index < 1					= []
+	| index == 1				= [x]
+	| otherwise					= x:(nthhead (index-1) xs)
+
 
 --generateNewStatesHelper :: String -> [String] -> Integer -> Integer -> [[String]]
 --generateNewStatesHelper row currState rowIndex colIndex 
@@ -116,12 +161,6 @@ getFirstIndex c check
 	
 	
 	
--- not used, delete?
-getElementOfRow :: String -> Integer -> Char
-getElementOfRow row index 
-	| index > 0 								= getElementOfRow (tail row) (index - 1)
-	| otherwise									= head row
-			 
 -- Solve rush_hour, but outputs nicely in the console
 --rush_print :: [String] -> IO ()
 --rush_print start = printStrMatrix (rush_hour start)
