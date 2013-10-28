@@ -1,6 +1,13 @@
 -- assign3.hs
 --
 
+-- Test functions
+-- get car tuple
+test = getCarStats ["ddaa","-bbc","---c"]
+-- check goal function
+testgoal = checkGoal ["-aa---","aa--aa","--aaXX","--AA--","------","------"]
+
+
 --rush_hour :: [String] -> [[String]]
 --rush_hour startState = statesearch startState [[]]
 
@@ -18,31 +25,15 @@
 --                       ((head unexplored):path)
 
 
---generateNew currState pos oldSegment newSegment
---   | pos + (length oldSegment) > length currState    = []
---   | segmentEqual currState pos oldSegment           =
---        (replaceSegment currState pos newSegment):
---        (generateNew currState (pos + 1) oldSegment newSegment)
---   | otherwise                                       =
---        (generateNew currState (pos + 1) oldSegment newSegment)
-
---generateNewRedSlides currState =
---   generateNew currState 0 "R_" "_R"
+checkGoal :: [String] -> Bool
+checkGoal map = ('X' == ((map !! 2) !! 5))
 
 
---generateNewRedJumps currState = 
---   generateNew currState 0 "RB_" "_BR"
-
---generateNewBlueSlides currState =
---   reverseEach (generateNew (reverse currState) 0 "B_" "_B")
-
---generateNewBlueJumps currState = 
---   reverseEach (generateNew (reverse currState) 0 "BR_" "_RB")
-
---generateNewStates :: [String] -> [[String]]
---generateNewStates currState =
---	generateNewStatesHelper (head currState) currState 0 0
---	concat  [CheckRow currState [], CheckColumn currState []]
+-- generateNewStates
+-- move up
+-- move down
+-- move left
+-- move right
 
 --generateNewStatesHelper :: String -> [String] -> Integer -> Integer -> [[String]]
 --generateNewStatesHelper row currState rowIndex colIndex 
@@ -50,9 +41,6 @@
 --	| checkCol currState colIndex  			= concat [moveUp currState rowIndex colIndex, moveDown currState rowIndex colIndex]
 --	| otherwise								= []
 
-
--- Test function for getting tuple of Cars
-test = getCarStats ["ddaa","-bbc","---c"]
 
 
 
