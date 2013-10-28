@@ -50,10 +50,24 @@
 --	| checkCol currState colIndex  			= concat [moveUp currState rowIndex colIndex, moveDown currState rowIndex colIndex]
 --	| otherwise								= []
 
-test = getCarStats (getCars ["ddaa","-bbc","---c"]) ["ddaa","-bbc","---c"] 0
+
+-- Test function for getting tuple of Cars
+test = getCarStats ["ddaa","-bbc","---c"]
 
 
 
+
+
+-- tuple: car [dir, row/col]
+-- get All cars' direction and location
+getCarStats :: [String] -> [(Char,[Int])]
+getCarStats map = getCarStatsHelper map 0
+	
+getCarStatsHelper :: [String] -> Int -> [(Char,[Int])]
+getCarStatsHelper map index 
+	| null map					= []
+	| otherwise					= removeTupleDuplicates((findCars cars (head map) index)++(getCarStatsHelper (tail map) (index+1)))
+	where cars = getCars map
 
 getCars :: [String] -> String
 getCars map 
@@ -66,12 +80,6 @@ removeduplicates (x:xs)
 	| x == '-'				= removeduplicates xs
 	| elem x xs				= removeduplicates xs
 	| otherwise				= x:removeduplicates xs
-
--- tuple: car [dir row/col]
-getCarStats :: String -> [String] -> Int -> [(Char,[Int])]
-getCarStats cars rows index 
-	| null rows					= []
-	| otherwise					= removeTupleDuplicates((findCars cars (head rows) index)++(getCarStats cars (tail rows) (index+1)))
 	
 findCars :: String -> String -> Int -> [(Char,[Int])]
 findCars cars row rowIndex 
@@ -102,7 +110,8 @@ getFirstIndex c check
 	| null check 			= 0
 	| head check == c		= 0
 	| otherwise				= 1 + getFirstIndex c (tail check)
-	
+
+-- end getting car tuple
 	
 	
 	
