@@ -6,6 +6,20 @@
 test = getCarStats ["ddaa","-bbc","---c"]
 -- check goal function
 testgoal = checkGoal ["-aa---","aa--aa","--aaXX","--AA--","------","------"]
+-- check move left
+testMoveLeft = moveLeft ('a', [1, 0]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 0
+testMoveLeft1 = moveLeft ('a', [1, 1]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 0
+testMoveLeft2 = moveLeft ('a', [1, 5]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 0
+testMoveLeft3 = moveLeft ('a', [1, 2]) ["-----a","a-----","-aaa-b","-baa--","-a-a-a", "-aa---"] 0
+testMoveLeft4 = moveLeft ('a', [1, 4]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "aa----"] 0
+
+
+testMoveRight = moveLeft ('a', [1, 0]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 0
+testMoveRight1 = moveLeft ('a', [1, 1]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 0
+testMoveRight2 = moveLeft ('a', [1, 5]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 0
+testMoveRight3 = moveLeft ('a', [1, 2]) ["-----a","a-----","-aaa-b","-baa--","-a-a-a", "-aa---"] 0
+testMoveRight4 = moveLeft ('a', [1, 4]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "aa----"] 0
+
 
 
 --rush_hour :: [String] -> [[String]]
@@ -38,30 +52,38 @@ checkGoal map = ('X' == ((map !! 2) !! 5))
 -- move down
 
 
-testMoveLeft = moveLeft ('a', [1, 0]) ["-----a","a-----","-aaa--","--aa--","-a-a-a"] 0
-testMoveLeft1 = moveLeft ('a', [1, 1]) ["-----a","a-----","-aaa--","--aa--","-a-a-a"] 0
-testMoveLeft2 = moveLeft ('a', [1, 5]) ["-----a","a-----","-aaa--","--aa--","-a-a-a"] 0
-testMoveLeft3 = moveLeft ('a', [1, 2]) ["-----a","a-----","-aaa-b","-baa--","-a-a-a"] 0
-
 -- move left
 moveLeft :: (Char, [Int]) -> [String] ->  Int -> [String]
 moveLeft carTuple map index
 	| index > 4									= map
 	| carRow !! index == fst carTuple			= map
-	| carRow !! (index + 1) /= fst carTuple 	= moveLeft carTuple map (index + 1)
-	| carRow !! index /= '-' && 
-		carRow !! (index + 1) == fst carTuple	= map
+	| carRow !! index /= '-' 					= moveLeft carTuple map (index + 1)
+	| carRow !! (index + 1) /= fst carTuple		= moveLeft carTuple map (index + 1)
 	| otherwise 								= 
 		moveLeft 
 			carTuple 
-			((nthhead ((snd carTuple !! 1) - 1) map) ++
-			[(nthhead index carRow) ++ 
-			((fst carTuple):'-':(nthtail (index + 2) (carRow)))] ++
-			(nthtail (snd carTuple !! 1 ) map))
+			((nthhead (((snd carTuple) !! 1)) map) ++
+			[(nthhead (index) carRow) ++ 
+			((fst carTuple):'-':(nthtail (index + 1) (carRow)))] ++
+			(nthtail ((snd carTuple) !! 1 ) map))
 			(index + 1)
-	where carRow = map !! (snd carTuple !! 1)
+	where carRow = (map !! ((snd carTuple) !! 1))
 
 -- move right
+moveRight :: (Char, [Int]) -> [String] ->  Int -> [String]
+moveRight carTuple map index
+	| index > 4									= map
+	| carRow !! index /= fst carTuple			= moveRight carTuple map (index + 1)
+	| carRow !! (index + 1) /= '-'				= moveRight carTuple map (index + 1)
+	| otherwise 								= 
+		moveRight 
+			carTuple 
+			((nthhead (((snd carTuple) !! 1)) map) ++
+			[(nthhead (index) carRow) ++ 
+			('-':(fst carTuple):(nthtail (index + 1) (carRow)))] ++
+			(nthtail ((snd carTuple) !! 1 ) map))
+			(index + 1)
+	where carRow = (map !! ((snd carTuple) !! 1))
 
 -- Move Helpers
 -- return the elements after the index, not including the index row
