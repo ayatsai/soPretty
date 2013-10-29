@@ -5,16 +5,15 @@
 
 -- Test functions
 -- get car tuple
-test = getCarStats ["ddaa","-bbc","---c"]
+test = getCarStats ["--B---","--B---","XXB---","--AA--","------", "------"]
 -- check goal function
 testgoal = checkGoal ["-aa---","aa--aa","--aaXX","--AA--","------","------"]
--- check move left
+-- check moves
 testMoveLeft = moveLeft ('a', [1, 0]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 0
 testMoveLeft1 = moveLeft ('a', [1, 1]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 0
 testMoveLeft2 = moveLeft ('a', [1, 5]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 0
 testMoveLeft3 = moveLeft ('a', [1, 2]) ["-----a","a-----","-aaa-b","-baa--","-a-a-a", "-aa---"] 0
 testMoveLeft4 = moveLeft ('a', [1, 4]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "aa----"] 0
-
 
 testMoveRight = moveRight ('a', [1, 0]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 5
 testMoveRight1 = moveRight ('a', [1, 1]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 5
@@ -22,43 +21,120 @@ testMoveRight2 = moveRight ('a', [1, 5]) ["-----a","a-----","-aaa--","--aa--","-
 testMoveRight3 = moveRight ('a', [1, 2]) ["-----a","a-----","-aaa-b","-baa--","-a-a-a", "-aa---"] 5
 testMoveRight4 = moveRight ('a', [1, 4]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "aa----"] 5
 
+testMoveUp = moveUp ('a', [1, 0]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 0
+testMoveUp1 = moveUp ('a', [1, 1]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 0
+testMoveUp2 = moveUp ('a', [1, 5]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 0
+testMoveUp3 = moveUp ('a', [1, 2]) ["-----a","a-----","-aaa-b","-baa--","-a-a-a", "-aa---"] 0
+testMoveUp4 = moveUp ('a', [1, 4]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "aa----"] 0
 
+testMoveDown = moveDown ('a', [1, 0]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 5
+testMoveDown1 = moveDown ('a', [1, 1]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 5
+testMoveDown2 = moveDown ('a', [1, 5]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "-aa---"] 5
+testMoveDown3 = moveDown ('a', [1, 2]) ["-----a","a-----","-aaa-b","-baa--","-a-a-a", "-aa---"] 5
+testMoveDown4 = moveDown ('a', [1, 4]) ["-----a","a-----","-aaa--","--aa--","-a-a-a", "aa----"] 5
 
---rush_hour :: [String] -> [[String]]
---rush_hour startState = statesearch startState [[]]
+testGNS = printStrMatrix (generateNewStates ["--B---","--B---","XXB---","--AA--","------", "------"])
+testGNS2 = printStrMatrix (generateNewStates ["--B---","--B---","XXB---","AA----","------", "------"])
+testGNS3 = printStrMatrix (generateNewStates ["------","------","XX----","AAB---","--B---", "--B---"])
 
---pegpuzzle start goal = reverse (statesearch [start] goal [])
+testRushHour = printStrMatrix (rush_hour ["--B---","--B---","XXB---","--AA--","------", "------"])
+-- End Test Functions
 
---statesearch :: [String] -> [[String]] -> [[String]]
---statesearch unexplored path
---   | null unexplored              = []
---   | checkGoal (head explored)    = goal:path
---   | (not (null result))          = result
---   | otherwise                    = 
---        statesearch (tail unexplored) path
---     where result = statesearch 
---                       (generateNewStates (head unexplored)) 
---                       ((head unexplored):path)
+rush_hour :: [String] -> [[String]]
+rush_hour startState = reverse (statesearch [startState] [[]])
+
+statesearch :: [[String]] -> [[String]] -> [[String]]
+statesearch unexplored path
+   | null unexplored              = []
+   | elem (head unexplored) path  = statesearch (tail unexplored) path 
+   | checkGoal (head unexplored)  = (head unexplored):path
+   | (not (null result))          = result
+   | otherwise                    = 
+        statesearch (tail unexplored) path
+     where result = statesearch 
+                       (generateNewStates (head unexplored)) 
+                       ((head unexplored):path)
 
 
 checkGoal :: [String] -> Bool
 checkGoal map = ('X' == ((map !! 2) !! 5))
 
-
+					   
 -- generateNewStates
+generateNewStates :: [String] -> [[String]]
+generateNewStates map = generateNewStatesIterator (getCarStats map) map
+
+generateNewStatesIterator :: [(Char, [Int])] -> [String] -> [[String]]
+generateNewStatesIterator carTuple map
+	| null carTuple				= []
+	| otherwise				= 
+		(generateNewStatesHelper (head carTuple) map) ++ (generateNewStatesIterator (tail carTuple) map)
+	
+generateNewStatesHelper :: (Char, [Int]) -> [String] -> [[String]]
+generateNewStatesHelper carTuple map
+	-- horizontal car
+	| (snd carTuple) !! 0 == 1		= [moveLeft carTuple map 0] ++ [moveRight carTuple map 5]
+	-- vertical car
+	| otherwise  					= [moveUp carTuple map 0] ++ [moveDown carTuple map 5]
+
+
+-- Moving Cars
 -- move up
---MoveUp :: (Char, [Int]) -> [String] -> [String]
---MoveUp CarTuple Map
---	| 
-
+moveUp :: (Char, [Int]) -> [String] -> Int -> [String]
+moveUp carTuple map index
+	| index > 4									= map
+--	| current == (fst carTuple)					= map
+	-- check the current cell
+	| currentCell /= '-'						= moveUp carTuple map (index + 1)
+	-- check the cell below
+	| ((map !! (index + 1)) !! (snd carTuple !! 1)) /= (fst carTuple)	
+												= moveUp carTuple map (index + 1)
+	| otherwise									=
+		moveUp
+			carTuple
+			-- get head of unaffected map
+			((nthhead index map) ++
+			-- get the current row + replace cell with car
+			[(nthhead ((snd carTuple) !! 1) (map !! index)) ++ 
+			((fst carTuple):(nthtail ((snd carTuple) !! 1) (map !! index)))] ++ 
+			-- get the next row + replace cell with space
+			[(nthhead ((snd carTuple) !! 1) (map !! (index + 1))) ++ 
+			('-':(nthtail ((snd carTuple) !! 1) (map !! (index + 1))))] ++ 
+			-- get rest of unaffected map
+			(nthtail (index + 1) map))
+			(index + 1)
+	where currentCell = ((map !! index) !! (snd carTuple !! 1))
+	
 -- move down
-
+moveDown :: (Char, [Int]) -> [String] -> Int -> [String]
+moveDown carTuple map index
+	| index <= 0								= map
+	-- check the current cell
+	| currentCell /= '-'				= moveDown carTuple map (index - 1)
+	-- check the cell above
+	| ((map !! (index - 1)) !! (snd carTuple !! 1)) /= 	(fst carTuple)
+												= moveDown carTuple map (index - 1)
+	| otherwise									=
+		moveDown
+			carTuple
+			-- get head of unaffected map
+			((nthhead (index - 1) map) ++
+			-- get the above row + replace cell with space
+			[(nthhead ((snd carTuple) !! 1) (map !! (index - 1))) ++ 
+			('-':(nthtail ((snd carTuple) !! 1) (map !! (index - 1))))] ++
+			-- get the current row + replace cell with car
+			[(nthhead ((snd carTuple) !! 1) (map !! index)) ++ 
+			((fst carTuple):(nthtail ((snd carTuple) !! 1) (map !! index)))] ++ 
+			-- get rest of unaffected map
+			(nthtail (index) map))
+			(index - 1)
+	where currentCell = ((map !! index) !! (snd carTuple !! 1))
 
 -- move left
 moveLeft :: (Char, [Int]) -> [String] ->  Int -> [String]
 moveLeft carTuple map index
 	| index > 4									= map
-	| carRow !! index == fst carTuple			= map
+--	| carRow !! index == fst carTuple			= map
 	| carRow !! index /= '-' 					= moveLeft carTuple map (index + 1)
 	| carRow !! (index + 1) /= fst carTuple		= moveLeft carTuple map (index + 1)
 	| otherwise 								= 
@@ -104,19 +180,11 @@ nthhead index (x:xs)
 	| otherwise					= x:(nthhead (index-1) xs)
 
 
---generateNewStatesHelper :: String -> [String] -> Integer -> Integer -> [[String]]
---generateNewStatesHelper row currState rowIndex colIndex 
---	| checkRow (head row) rowIndex row		= concat [moveLeft currState rowIndex colIndex, moveRight currState rowIndex colIndex]
---	| checkCol currState colIndex  			= concat [moveUp currState rowIndex colIndex, moveDown currState rowIndex colIndex]
---	| otherwise								= []
-
-
-
-
-
 
 -- tuple: car [dir, row/col]
 -- get All cars' direction and location
+-- row car = 1
+-- col car = 0
 getCarStats :: [String] -> [(Char,[Int])]
 getCarStats map = getCarStatsHelper map 0
 	
@@ -132,11 +200,11 @@ getCars map
 	| otherwise				= removeduplicates(getCars (tail map)++(removeduplicates (head map)))
 
 removeduplicates :: String -> String
-removeduplicates (x:xs)
-	| null xs				= x:[]
-	| x == '-'				= removeduplicates xs
-	| elem x xs				= removeduplicates xs
-	| otherwise				= x:removeduplicates xs
+removeduplicates check
+	| null check					= []
+	| (head check) == '-'				= removeduplicates (tail check)
+	| elem (head check) (tail check)	= removeduplicates (tail check)
+	| otherwise							= (head check):removeduplicates (tail check)
 	
 findCars :: String -> String -> Int -> [(Char,[Int])]
 findCars cars row rowIndex 
@@ -190,19 +258,19 @@ getFirstIndex c check
 --rush_print start = printStrMatrix (rush_hour start)
 
 -- Get a list of lists of strings and output them nicely.
---printStrMatrix :: [[String]] -> IO ()
---printStrMatrix [] = printStrList []
---printStrMatrix (x:xs) = do
---    printStrList x
---    printStrMatrix xs
+printStrMatrix :: [[String]] -> IO ()
+printStrMatrix [] = printStrList []
+printStrMatrix (x:xs) = do
+    printStrList x
+    printStrMatrix xs
 
 -- Print nicely a list of strings.
 -- Eg: printStrList ["aabb", "ccdd", "eeff"] prints in the console:
 -- aabb
 -- ccdd
 -- eeff
---printStrList :: [String] -> IO ()
---printStrList [] = putStrLn ""
---printStrList (x:xs) = do
---    putStrLn x
---    printStrList xs
+printStrList :: [String] -> IO ()
+printStrList [] = putStrLn ""
+printStrList (x:xs) = do
+    putStrLn x
+    printStrList xs
