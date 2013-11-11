@@ -2,6 +2,12 @@ testBoard = ["wwww","---", "--", "---", "bbbb"]
 testGetCharPos = getWhitePos ["w---","-w-", "w-", "--w", "bbbb"] 
 testMoveBL = moveBL ["w---","-w-", "w-", "--w", "bbbb"] 'w' (1,1)
 testMoveBL2 = moveBL ["w---","-w-", "--", "--w", "bbbb"] 'w' (1,1)
+testMoveBL3 = moveBR ["w---","-w-", "-w", "--w", "bbbb"] 'w' (2,3)
+testMoveBL4 = moveBR ["w---","-w-", "-w", "--w", "bb--"] 'w' (2,3)
+testMoveBR = moveBR ["w---","-w-", "w-", "--w", "bbbb"] 'w' (1,1)
+testMoveBR2 = moveBR ["w---","-w-", "-w", "--w", "bbbb"] 'w' (1,1)
+testMoveBR3 = moveBR ["w---","-w-", "-w", "--w", "bbbb"] 'w' (2,3)
+testMoveBR4 = moveBR ["w---","-w-", "-w", "--w", "bbb-"] 'w' (2,3)
 
 --complete 
 --getCharPos: returns the tuple (x,y) position of a given character in the game board
@@ -30,16 +36,19 @@ getCharPosInRow_helper row char x y
 --moveBL: Moves a char to the bottom left
 moveBL :: [String] -> Char -> (Int, Int) -> [String]
 moveBL board char piece
-	| checkMoveBL board piece 		 	= updatedBoard
+	| checkMoveBL board piece && pieceIsTopHalf board piece	
+				= moveRightBelow board char piece
+	| checkMoveBL board piece && pieceIsBottomHalf board piece
+				= moveDirectlyBelow board char piece
 	| otherwise							= board
-	where updatedBoard = 
-		(nthhead board (snd piece)) ++
-		([(nthhead (board !! (snd piece)) (fst piece)) ++
-		('-':(nthtail (board !! (snd piece)) (fst piece)))]) ++
-		([(nthhead (board !! ((snd piece) + 1)) ((fst piece) - 1)) ++
-		(char:(nthtail (board !! ((snd piece) + 1)) ((fst piece) - 1)))]) ++
-		(nthtail board ((snd piece) + 1))
-	
+
+moveBR :: [String] -> Char -> (Int, Int) -> [String]
+moveBR board char piece
+	| checkMoveBR board piece && pieceIsTopHalf board piece	
+				= moveDirectlyBelow board char piece
+	| checkMoveBR board piece && pieceIsBottomHalf board piece
+				= moveLeftBelow board char piece
+	| otherwise							= board
 
 --incomplete
 --moveBR
@@ -49,18 +58,59 @@ moveBL board char piece
 --complete
 checkMoveBL :: [String] -> (Int, Int) -> Bool
 checkMoveBL board piece
-	| (fst piece) == 0				= False
-	|  togo == '-'					= True
+	| (pieceIsTopHalf board piece) && 
+	  ((board !! ((snd piece) + 1)) !! ((fst piece) - 1) == '-')
+									= True
+	| (pieceIsBottomHalf board piece) && 
+	  ((board !! ((snd piece) + 1)) !! (fst piece) == '-')
+									= True
 	| otherwise					 	= False
 	where togo = ((board !! ((snd piece) + 1)) !! ((fst piece) - 1))
 	
---incomplete
---checkMoveBR
+--
+checkMoveBR :: [String] -> (Int, Int) -> Bool
+checkMoveBR board piece
+	| (pieceIsTopHalf board piece) && 
+	  ((board !! ((snd piece) + 1)) !! (fst piece) == '-')
+									= True
+	| (pieceIsBottomHalf board piece) && 
+	  ((board !! ((snd piece) + 1)) !! ((fst piece) + 1) == '-')
+									= True
+	| otherwise					 	= False
+
 --checkMoveUL
 --checkMoveUR
 	
 -- complete
 -- Move Helpers
+
+moveDirectlyBelow :: [String] -> Char -> (Int, Int) -> [String]
+moveDirectlyBelow board char piece	=
+				(nthhead board (snd piece)) ++
+				([(nthhead (board !! (snd piece)) (fst piece)) ++
+				('-':(nthtail (board !! (snd piece)) (fst piece)))]) ++
+				([(nthhead (board !! ((snd piece) + 1)) (fst piece)) ++
+				(char:(nthtail (board !! ((snd piece) + 1)) (fst piece)))]) ++
+				(nthtail board ((snd piece) + 1))
+
+moveRightBelow :: [String] -> Char -> (Int, Int) -> [String]
+moveRightBelow board char piece	=
+				(nthhead board (snd piece)) ++
+				([(nthhead (board !! (snd piece)) (fst piece)) ++
+				('-':(nthtail (board !! (snd piece)) (fst piece)))]) ++
+				([(nthhead (board !! ((snd piece) + 1)) ((fst piece) - 1)) ++
+				(char:(nthtail (board !! ((snd piece) + 1)) ((fst piece) - 1)))]) ++
+				(nthtail board ((snd piece) + 1))
+				
+moveLeftBelow :: [String] -> Char -> (Int, Int) -> [String]
+moveLeftBelow board char piece	=
+				(nthhead board (snd piece)) ++
+				([(nthhead (board !! (snd piece)) (fst piece)) ++
+				('-':(nthtail (board !! (snd piece)) (fst piece)))]) ++
+				([(nthhead (board !! ((snd piece) + 1)) ((fst piece) + 1)) ++
+				(char:(nthtail (board !! ((snd piece) + 1)) ((fst piece) + 1)))]) ++
+				(nthtail board ((snd piece) + 1))
+
 -- return the elements after the index, not including the index row
 nthtail :: [a] -> Int -> [a]
 nthtail [] index = []
@@ -78,7 +128,8 @@ nthhead (x:xs) index
 
 	
 --complete
--- not used yet
 --pieceIsTopHalf: Checks whether the row to move to is shorter or longer. Middle counts as True.
 pieceIsTopHalf board piece = length board > ((snd piece) + (snd piece))
+--pieceIsBottomHalf: Checks whether the row to move to is shorter or longer. Middle counts as True.
+pieceIsBottomHalf board piece = length board < ((snd piece) + (snd piece))
 
