@@ -167,6 +167,7 @@ moveLeftBelow board char piece	=
 				(char:(nthtail (board !! ((snd piece) + 1)) ((fst piece) + 1)))]) ++
 				(nthtail board ((snd piece) + 1))
 
+-- move char to x, y-1 relative to current x, y
 moveDirectlyAbove :: [String] -> Char -> (Int, Int) -> [String]
 moveDirectlyAbove board char piece	=
 				(nthhead board ((snd piece) - 1)) ++
@@ -176,6 +177,7 @@ moveDirectlyAbove board char piece	=
 				('-':(nthtail (board !! (snd piece)) (fst piece)))]) ++
 				(nthtail board (snd piece))
 
+-- move char to x-1, y-1 relative to current x, y
 moveLeftAbove :: [String] -> Char -> (Int, Int) -> [String]
 moveLeftAbove board char piece	=
 				(nthhead board ((snd piece) - 1)) ++
@@ -185,6 +187,7 @@ moveLeftAbove board char piece	=
 				('-':(nthtail (board !! (snd piece)) (fst piece)))]) ++
 				(nthtail board (snd piece))
 				
+-- move char to x+1, y-1 relative to current x, y
 moveRightAbove :: [String] -> Char -> (Int, Int) -> [String]
 moveRightAbove board char piece	=
 				(nthhead board ((snd piece) - 1)) ++
