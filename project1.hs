@@ -77,57 +77,86 @@ testGNS3 = generateNewStates ["w-b-","-wb", "--", "w--", "b--w"] 'b' 'b'
 testGNS4 = generateNewStates ["----","---", "wb", "---", "----"] 'b' 'b'
 testGNS5 = generateNewStates ["----","---", "w-", "wb-", "----"] 'b' 'b'
 
-testSS = statesearch ["w-b-","-wb", "--", "w--", "b--w"] 'b'
+testSS = statesearch ["w-b-","-wb", "--", "w--", "b--w"] 'b' 0
+testSS2 = statesearch ["w-b-","-wb", "--", "w--", "b--w"] 'w' 2
 
-testGMaxH = getMaxHeuristics [(["a"],3),(["f"],0),(["g"],5)] (negate(3*3))
-testGMinH = getMinHeuristics [(["a"],3),(["f"],-5),(["g"],5)] (3*3)
+testGMaxH = getMaxHeuristics [(["a"],3),(["f"],0),(["g"],5)] (["dummy"], (negate(3*3)))
+testGMinH = getMinHeuristics [(["a"],3),(["f"],-5),(["g"],5)] (["dummy"], (3*3))
 
-testSSH = statesearch_helper (generateNewStates testBoard 'w' 'w') 'b' 'b'
+tests = evaluateBoard ["w-b-","-wb", "--", "w--", "b--w"] 'b'
+test = getMaxHeuristics (generateNewStates ["w-b-","-wb", "--", "w--", "b--w"] 'b' 'b') (["dummy"], (negate (4*4)))
+
 
 -- TODO: white moves first??? do we need to check for this?
 
--- oska :: [String] -> Char -> Int -> [String]
+oska :: [String] -> Char -> Int -> [String]
+oska board player count = statesearch board player count
 
 
-statesearch :: [String] -> Char -> Int -> [([String], Int)]
-statesearch board player count
-	| otherwise		 = getOptimalStates (statesearch_counter states 'w' player count) player (getMaxHeuristics (statesearch_counter states 'w' player count) (negate 25))
-		where
-			states = generateNewStates board 'w' player
+-- max = 1
+-- min = -1
+statesearch :: [String] -> Char -> Int -> [String]
+statesearch board player count = fst (statesearch_helper board player count  1 1)
 
-statesearch_counter :: [([String], Int)] -> Char -> Char -> Int -> [([String], Int)]
-statesearch_counter board player evalAs count 
-	| count == 0			= board
-	| player == 'w'			= statesearch_counter (statesearch_helper board 'b' evalAs) 'b' evalAs (count - 1)
-	| otherwise			= statesearch_counter (statesearch_helper board 'w' evalAs) 'w' evalAs (count - 1)
+statesearch_iterator :: [([String], Int)] -> Char -> Int -> Int -> [([String], Int)]
+statesearch_iterator boards player count minmax
+	| null boards								= []
+	| otherwise									= [(statesearch_helper (fst (head boards)) player count minmax 0)] ++ 
+												  (statesearch_iterator (tail boards) player count minmax)
 
-statesearch_helper :: [([String], Int)] -> Char -> Char -> [([String], Int)]
-statesearch_helper states player evalAs
-	| states == []			= []
-	| otherwise			= (generateNewStates (fst (head states)) player evalAs)++(statesearch_helper (tail states) player evalAs)
-
-
-getOptimalStates :: [([String], Int)] -> Char -> Int -> [([String], Int)]
-getOptimalStates states player max
-	| states == []			= []
-	| max == (snd (head states)) 	= (head states):(getOptimalStates (tail states) player max)
-	| otherwise			= getOptimalStates (tail states) player max
-
--- get the max heuristics value from the list
-getMaxHeuristics :: [([String], Int)] -> Int -> Int
-getMaxHeuristics states value
-	| null states					= value
-	| (snd (head states)) > value	= getMaxHeuristics (tail states) (snd (head states))
-	| otherwise						= getMaxHeuristics (tail states) value
--- get the min heuristics value from the list
-getMinHeuristics :: [([String], Int)] -> Int -> Int
-getMinHeuristics states value
-	| null states					= value
-	| (snd (head states)) < value	= getMinHeuristics (tail states) (snd (head states))
-	| otherwise						= getMinHeuristics (tail states) value
-
+statesearch_helper :: [String] -> Char -> Int -> Int -> Int -> ([String], Int)
+statesearch_helper board player count minmax start
+	| start == 1 && count == 0 && minmax == 1	= getMaxHeuristics 
+													(generateNewStates board player player) 
+													(["dummy"], (negate((length board) * (length board))))
+	| start == 1 && count == 0 && minmax == -1	= getMinHeuristics 
+													(generateNewStates board (getOpponentMarker player) player) 
+													(["dummy"], ((length board) * (length board)))
+	| start == 1 && minmax == 1					= getMaxHeuristics 
+													(statesearch_iterator 
+														(generateNewStates board player player) 
+														player 
+														(count - 1) 
+														(negate minmax))
+													(["dummy"], (negate((length board) * (length board))))
+	| start == 1 && minmax == -1				= getMinHeuristics 
+													(statesearch_iterator 
+														(generateNewStates board (getOpponentMarker player) player) 
+														player 
+														(count - 1) 
+														(negate minmax)) 
+													(["dummy"], ((length board) * (length board)))
+	| count == 0 && minmax == 1					= (board, snd (getMaxHeuristics 
+													(generateNewStates board player player) 
+													(["dummy"], (negate((length board) * (length board))))))
+	| count == 0 && minmax == -1				= (board, snd (getMinHeuristics 
+													(generateNewStates board (getOpponentMarker player) player) 
+													(["dummy"], ((length board) * (length board)))))
+	| minmax == 1								= (board, snd (getMaxHeuristics 
+													(statesearch_iterator 
+														(generateNewStates board player player) 
+														player 
+														(count - 1) 
+														(negate minmax))
+													(["dummy"], (negate((length board) * (length board))))))
+	| otherwise									= (board, snd (getMinHeuristics 
+													(statesearch_iterator 
+														(generateNewStates board (getOpponentMarker player) player) 
+														player 
+														(count - 1) 
+														(negate minmax)) 
+													(["dummy"], ((length board) * (length board)))))
 	
 
+
+
+getOpponentMarker :: Char -> Char
+getOpponentMarker player
+	| player == 'w'			= 'b'
+	| otherwise				= 'w'
+	
+-- evalAs will always be the current player
+-- player will change depending on whose move
 -- generateNewStates
 generateNewStates :: [String] -> Char -> Char -> [([String], Int)]
 generateNewStates board player evalAs
@@ -148,10 +177,26 @@ generateNewStatesHelper :: [String] -> Char -> Char -> (Int,Int) -> [([String], 
 generateNewStatesHelper board player evalAs pos 
 	| player == 'w'				= [(moveBL board player pos, evaluateBoard (moveBL board player pos) evalAs)] ++ 
 								  [(moveBR board player pos, evaluateBoard (moveBR board player pos) evalAs)]
-	| otherwise					= [(moveUL board player pos, evaluateBoard (moveUL board player pos) player)] ++ 
+	| otherwise					= [(moveUL board player pos, evaluateBoard (moveUL board player pos) evalAs)] ++ 
 								  [(moveUR board player pos, evaluateBoard (moveUR board player pos) evalAs)]
 
 
+								  
+-- get the max heuristics value from the list
+getMaxHeuristics :: [([String], Int)] -> ([String], Int) -> ([String], Int)
+getMaxHeuristics states best
+	| null states							= best
+	| (snd (head states)) > (snd best)		= getMaxHeuristics (tail states) (head states)
+	| otherwise								= getMaxHeuristics (tail states) best
+-- get the min heuristics value from the list
+getMinHeuristics :: [([String], Int)] -> ([String], Int) -> ([String], Int)
+getMinHeuristics states best
+	| null states							= best
+	| (snd (head states)) < (snd best)		= getMinHeuristics (tail states) (head states)
+	| otherwise								= getMinHeuristics (tail states) best
+	
+
+	
 -- heuristics
 -- value			: description
 -- +n^2				: own pieces are at the back of the opponent's end
