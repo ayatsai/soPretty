@@ -16,10 +16,94 @@ testMoveUR = moveUR ["w---","-w-", "w-", "--w", "bbbb"] 'w' (1,1)
 testMoveUR2 = moveUR ["w-w-","-w-", "--", "--w", "bbbb"] 'w' (1,1)
 testMoveUR3 = moveUR ["w---","-w-", "--", "--w", "bbbw"] 'w' (3,4)
 testMoveUR4 = moveUR ["w---","-w-", "--", "--w", "bb--"] 'w' (2,3)
+testEvaluateBoard = evaluateBoard ["w---","-w-", "--", "---", "bb-w"] 'w'
+testEvaluateBoard2 = evaluateBoard ["w--w","---", "--", "---", "bb--"] 'b'
+testEvaluateBoard3 = evaluateBoard ["----","---", "--", "---", "bb--"] 'b'
+testEvaluateBoard4 = evaluateBoard ["----","---", "--", "---", "bb--"] 'w'
+testEvaluateBoard5 = evaluateBoard ["----","---", "--", "---", "bbww"] 'w'
+testEvaluateBoard6 = evaluateBoard ["----","---", "--", "---", "bbww"] 'b'
+testEvaluateBoard7 = evaluateBoard ["-bbb","---", "--", "---", "--ww"] 'w'
+testEvaluateBoard8 = evaluateBoard ["--bb","---", "--", "---", "--ww"] 'b'
+
+
+
+-- heuristics
+-- value			: description
+-- +n^2				: own pieces are at the back of the opponent's end
+-- -n^2				: opponent pieces are at the back of the own end
+-- +n^2				: opponent pieces are removed
+-- -n^2				: own pieces are removed
+-- opponent - own	: steps to the end zone
+-- ASSUME: w is always moving down
+evaluateBoard :: [String] -> Char -> Int
+evaluateBoard board player
+	-- TODO return what for draw???
+	| checkDraw board 						= ((length board) * (length board))
+	| checkPlayerWin board player			= ((length board) * (length board))
+	| checkOpponentWin board player			= negate ((length board) * (length board))
+	| otherwise								= getOpponentDistance board player - getPlayerDistance board player
+
+checkDraw :: [String] -> Bool
+checkDraw board = (checkBothAtEndZone board) && ((length (getWhitePos board)) == (length (getBlackPos board)))
+
+checkPlayerWin :: [String] -> Char -> Bool
+checkPlayerWin board player 
+	| player == 'w' && null (getWhitePos board)					= False
+	| player == 'b' && null (getBlackPos board)					= False
+	| player == 'w' && (checkBothAtEndZone board) && 
+	  (length (getWhitePos board) > length (getBlackPos board)) = True
+	| player == 'w' && (checkBothAtEndZone board) &&
+	  (length (getBlackPos board) > length (getWhitePos board)) = False
+	| player == 'b' && (checkBothAtEndZone board) &&
+	  (length (getBlackPos board) > length (getWhitePos board)) = True
+	| player == 'b' && (checkBothAtEndZone board) &&
+	  (length (getBlackPos board) < length (getWhitePos board)) = False
+	| player == 'w'	&& 
+	  ((length (getBlackPos board)) == 0 || 
+	  (checkEndZone (getWhitePos board) ((length board) - 1)))	= True
+	| player == 'b'	&& 
+	  ((length (getWhitePos board)) == 0 || 
+	  (checkEndZone (getBlackPos board) 0))						= True
+	| otherwise													= False
+
+checkOpponentWin :: [String] -> Char -> Bool
+checkOpponentWin board player
+	| player == 'w'							= checkPlayerWin board 'b'
+	| otherwise								= checkPlayerWin board 'w'
+	
+checkEndZone :: [(Int, Int)] -> Int -> Bool
+checkEndZone pos n
+	| null pos							= True
+	| (snd (head pos)) == n				= checkEndZone (tail pos) n
+	| otherwise							= False
+
+checkBothAtEndZone :: [String] -> Bool
+checkBothAtEndZone board = (checkEndZone (getWhitePos board) ((length board) - 1)) &&
+								  (checkEndZone (getBlackPos board) 0)
+	
+getPlayerDistance :: [String] -> Char -> Int
+getPlayerDistance board player
+	| player == 'w'							= getDistance (getWhitePos board) ((length board) - 1)
+	| otherwise								= getDistance (getBlackPos board) 0
+
+getOpponentDistance :: [String] -> Char -> Int
+getOpponentDistance board player
+	| player == 'w'							= getDistance (getBlackPos board) 0
+	| otherwise								= getDistance (getWhitePos board) ((length board) - 1)
+	
+getDistance :: [(Int, Int)] -> Int -> Int
+getDistance pos endZone
+	| null pos								= 0
+	| endZone == 0							= (snd (head pos)) + (getDistance (tail pos) endZone)
+	| otherwise								= endZone - (snd (head pos)) + (getDistance (tail pos) endZone)
+
+	
 
 --complete 
 --getCharPos: returns the tuple (x,y) position of a given character in the game board
+getWhitePos :: [String] -> [(Int, Int)]
 getWhitePos a = getCharPos a 'w'
+getBlackPos :: [String] -> [(Int, Int)]
 getBlackPos a = getCharPos a 'b'
 
 getCharPos :: [String] -> Char -> [(Int, Int)] 
