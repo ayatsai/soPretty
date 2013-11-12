@@ -1,3 +1,8 @@
+-- project1.hs
+--
+-- Chin-Tsai Tsai 42698100
+-- Wesley Tsai 44396109
+
 oska_l8x7 :: [String] -> Char -> Int -> [String]
 oska_l8x7 board player count = statesearch_l8x7 board player count
 
