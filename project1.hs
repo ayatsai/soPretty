@@ -33,20 +33,23 @@ testGMinH = getMinHeuristics [(["a"],3),(["f"],-5),(["g"],5)] (3*3)
 
 
 
-
+-- TODO
+oska :: [String] -> Char -> Int -> [String]
+oska board player lookahead = fst (head (statesearch board player lookahead))
 
 -- TODO: white moves first??? do we need to check for this?
 
 -- TODO: minimax algorithm here
-statesearch :: [String] -> Char -> [([String], Int)]
-statesearch board player = generateNewStates board player
+statesearch :: [String] -> Char -> Int -> [([String], Int)]
+statesearch board player lookahead = generateNewStates board player
 
+-- get the max heuristics value from the list
 getMaxHeuristics :: [([String], Int)] -> Int -> Int
 getMaxHeuristics states value
 	| null states					= value
 	| (snd (head states)) > value	= getMaxHeuristics (tail states) (snd (head states))
 	| otherwise						= getMaxHeuristics (tail states) value
-
+-- get the min heuristics value from the list
 getMinHeuristics :: [([String], Int)] -> Int -> Int
 getMinHeuristics states value
 	| null states					= value
