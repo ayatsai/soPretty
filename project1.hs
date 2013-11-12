@@ -27,6 +27,9 @@ testEvaluateBoard8 = evaluateBoard ["--bb","---", "--", "---", "--ww"] 'b'
 testGNS = generateNewStates ["w---","-w-", "--", "---", "bb-w"] 'w'
 testGNS2 = generateNewStates ["w-b-","-wb", "--", "---", "b--w"] 'b'
 testSS = statesearch ["w-b-","-wb", "--", "---", "b--w"] 'b'
+testGMaxH = getMaxHeuristics [(["a"],3),(["f"],0),(["g"],5)] (negate(3*3))
+testGMinH = getMinHeuristics [(["a"],3),(["f"],-5),(["g"],5)] (3*3)
+
 
 
 
@@ -38,6 +41,19 @@ testSS = statesearch ["w-b-","-wb", "--", "---", "b--w"] 'b'
 statesearch :: [String] -> Char -> [([String], Int)]
 statesearch board player = generateNewStates board player
 
+getMaxHeuristics :: [([String], Int)] -> Int -> Int
+getMaxHeuristics states value
+	| null states					= value
+	| (snd (head states)) > value	= getMaxHeuristics (tail states) (snd (head states))
+	| otherwise						= getMaxHeuristics (tail states) value
+
+getMinHeuristics :: [([String], Int)] -> Int -> Int
+getMinHeuristics states value
+	| null states					= value
+	| (snd (head states)) < value	= getMinHeuristics (tail states) (snd (head states))
+	| otherwise						= getMinHeuristics (tail states) value
+
+	
 
 -- generateNewStates
 generateNewStates :: [String] -> Char -> [([String], Int)]
@@ -57,7 +73,6 @@ generateNewStatesIterator board player pos
 	
 generateNewStatesHelper :: [String] -> Char -> (Int,Int) -> [([String], Int)]
 generateNewStatesHelper board player pos 
--- TODO add jumping
 	| player == 'w'				= [(moveBL board player pos, evaluateBoard (moveBL board player pos) player)] ++ 
 								  [(moveBR board player pos, evaluateBoard (moveBR board player pos) player)]
 	| otherwise					= [(moveUL board player pos, evaluateBoard (moveUL board player pos) player)] ++ 
