@@ -1,199 +1,121 @@
-testBoard = ["wwww","---", "--", "---", "bbbb"]
-testGetCharPos = getWhitePos ["w---","-w-", "w-", "--w", "bbbb"] 
-testMoveBL = moveBL ["w---","-w-", "w-", "--w", "bbbb"] 'w' (0,0)
-testMoveBL2 = moveBL ["w---","-w-", "--", "--w", "bbbb"] 'w' (1,1)
-testMoveBL3 = moveBL ["w---","-w-", "-w", "--w", "bbbw"] 'w' (3,4)
-testMoveBL4 = moveBL ["w---","-w-", "-w", "--w", "bb--"] 'w' (2,3)
-
--- Should return ["w---","---", "-w", "w-w", "bb--"]
-testMoveBL5 = moveBL ["w---","-w-", "bb", "--w", "bb--"] 'w' (1,1)
-testMoveBL6 = moveBL ["---w","-wb", "bw", "b-w", "----"] 'w' (1,1)
-testMoveBL7 = moveBL ["w---","-w-", "-b", "--w", "bb--"] 'w' (1,1)
-
-testMoveBR = moveBR ["w---","-w-", "w-", "--w", "bbbb"] 'w' (1,1)
-testMoveBR2 = moveBR ["w--w","-w-", "-w", "--w", "bbbb"] 'w' (3,0)
-testMoveBR3 = moveBR ["w---","-w-", "-w", "--w", "bbbw"] 'w' (3,4)
-testMoveBR4 = moveBR ["w---","-w-", "-w", "--w", "bbb-"] 'w' (2,3)
-
-testMoveBR5 = moveBR ["w---","-w-", "bb", "---", "bb--"] 'w' (1,1)
-testMoveBR6 = moveBR ["---w","-wb", "bw", "b-w", "----"] 'w' (1,1)
-
-testMoveUL = moveUL ["w---","-w-", "w-", "--w", "bbbb"] 'w' (1,1)
-testMoveUL2 = moveUL ["ww--","-w-", "--", "--w", "bbbb"] 'w' (1,1)
-testMoveUL3 = moveUL ["w---","-w-", "--", "---", "bbbw"] 'w' (3,4)
-testMoveUL4 = moveUL ["w---","-w-", "--", "w--", "bb--"] 'w' (2,3)
-
-testMoveUL5 = moveUL ["w---","-w-", "w-", "--w", "bbbb"] 'w' (1,1)
-testMoveUL6 = moveUL ["ww--","-w-", "--", "--w", "bbbb"] 'w' (1,1)
-testMoveUL7 = moveUL ["w---","-w-", "--", "--b", "bbbw"] 'w' (3,4)
-testMoveUL8 = moveUL ["w---","-w-", "bb", "-w-", "bb--"] 'w' (1,3)
-
-testMoveUR = moveUR ["w---","-w-", "w-", "--w", "bbbb"] 'w' (1,1)
-testMoveUR2 = moveUR ["w-w-","-w-", "--", "--w", "bbbb"] 'w' (1,1)
-testMoveUR3 = moveUR ["w---","-w-", "--", "--w", "bbbw"] 'w' (3,4)
-testMoveUR4 = moveUR ["w---","-w-", "--", "--w", "bb--"] 'w' (2,3)
-testMoveUR5 = moveUR ["w---","-w-", "bb", "-ww", "bb--"] 'w' (1,3)
-
--- should return 1
-testCheckMoveBL = checkMoveBL ["---w","-w-", "bw", "--w", "bb--"] 'w' (3,0)
--- should return 2
-testCheckMoveBL2 = checkMoveBL ["---w","-wb", "--", "--w", "bb--"] 'w' (3,0)
--- should return 0
-testCheckMoveBL3 = checkMoveBL ["---w","-wb", "-w", "-bw", "----"] 'w' (3,0)
--- should return 2 
-testCheckMoveBL4 = checkMoveBL ["---w","-wb", "bw", "-bw", "----"] 'w' (1,1)
--- should return 1
-testCheckMoveBL5 = checkMoveBL ["---w","-wb", "bw", "--w", "----"] 'w' (1,2)
--- Bug. jumps over two enemies. Handled by MoveBL_helper instead
-testCheckMoveBL6 = checkMoveBL ["---w","-wb", "bw", "b-w", "----"] 'w' (1,1)
-
-testCheckMoveBR = checkMoveBR ["w---","-w-", "w-", "--w", "bbbb"] 'w' (1,1)
-testCheckMoveBR2 = checkMoveBR ["w--w","-w-", "-w", "--w", "bbbb"] 'w' (3,0)
-testCheckMoveBR3 = checkMoveBR ["w---","-w-", "-w", "--w", "bbbw"] 'w' (3,4)
-testCheckMoveBR4 = checkMoveBR ["w---","ww-", "bw", "--w", "bbb-"] 'w' (0,1)
-
-testCheckMoveUL = checkMoveUL ["w---","-w-", "w-", "--w", "bbbb"] 'w' (1,1)
-testCheckMoveUL2 = checkMoveUL ["ww--","-w-", "--", "--w", "bbbb"] 'w' (1,1)
-testCheckMoveUL3 = checkMoveUL ["w---","-w-", "--", "--b", "bbbw"] 'w' (3,4)
-testCheckMoveUL4 = checkMoveUL ["w---","-w-", "bb", "-w-", "bb--"] 'w' (1,3)
-
-testCheckMoveUR = checkMoveUR ["w---","-w-", "w-", "--w", "bbbb"] 'w' (1,1)
-testCheckMoveUR2 = checkMoveUR ["ww--","-w-", "--", "--w", "bbbb"] 'w' (1,1)
-testCheckMoveUR3 = checkMoveUR ["w---","-w-", "--", "--b", "bbbw"] 'w' (3,4)
-testCheckMoveUR4 = checkMoveUR ["w---","-w-", "bb", "-w-", "bb--"] 'w' (1,3)
-
-testEvaluateBoard = evaluateBoard ["w---","-w-", "--", "---", "bb-w"] 'w'
-testEvaluateBoard2 = evaluateBoard ["w--w","---", "--", "---", "bb--"] 'b'
-testEvaluateBoard3 = evaluateBoard ["----","---", "--", "---", "bb--"] 'b'
-testEvaluateBoard4 = evaluateBoard ["----","---", "--", "---", "bb--"] 'w'
-testEvaluateBoard5 = evaluateBoard ["----","---", "--", "---", "bbww"] 'w'
-testEvaluateBoard6 = evaluateBoard ["----","---", "--", "---", "bbww"] 'b'
-testEvaluateBoard7 = evaluateBoard ["-bbb","---", "--", "---", "--ww"] 'w'
-testEvaluateBoard8 = evaluateBoard ["--bb","---", "--", "---", "--ww"] 'b'
-testGNS = generateNewStates ["w---","-w-", "--", "---", "bb-w"] 'w' 'w'
-testGNS2 = generateNewStates ["w-b-","-wb", "--", "---", "b--w"] 'b' 'b'
-testGNS3 = generateNewStates ["w-b-","-wb", "--", "w--", "b--w"] 'b' 'b'
-
-testGNS4 = generateNewStates ["----","---", "wb", "---", "----"] 'b' 'b'
-testGNS5 = generateNewStates ["----","---", "w-", "wb-", "----"] 'b' 'b'
-
-testSS = statesearch ["w-b-","-wb", "--", "w--", "b--w"] 'b' 0
-testSS2 = statesearch ["w-b-","-wb", "--", "w--", "b--w"] 'w' 2
-
-testGMaxH = getMaxHeuristics [(["a"],3),(["f"],0),(["g"],5)] (["dummy"], (negate(3*3)))
-testGMinH = getMinHeuristics [(["a"],3),(["f"],-5),(["g"],5)] (["dummy"], (3*3))
-
-tests = evaluateBoard ["w-b-","-wb", "--", "w--", "b--w"] 'b'
-test = getMaxHeuristics (generateNewStates ["w-b-","-wb", "--", "w--", "b--w"] 'b' 'b') (["dummy"], (negate (4*4)))
+oska_l8x7 :: [String] -> Char -> Int -> [String]
+oska_l8x7 board player count = statesearch_l8x7 board player count
 
 
--- TODO: white moves first??? do we need to check for this?
-
-oska :: [String] -> Char -> Int -> [String]
-oska board player count = statesearch board player count
-
-
+-- minimax agorithm
+-- min and max flag:
 -- max = 1
 -- min = -1
-statesearch :: [String] -> Char -> Int -> [String]
-statesearch board player count = fst (statesearch_helper board player count  1 1)
+statesearch_l8x7 :: [String] -> Char -> Int -> [String]
+statesearch_l8x7 board player count = fst (statesearch_helper_l8x7 board player count  1 1)
 
-statesearch_iterator :: [([String], Int)] -> Char -> Int -> Int -> [([String], Int)]
-statesearch_iterator boards player count minmax
+statesearch_iterator_l8x7 :: [([String], Int)] -> Char -> Int -> Int -> [([String], Int)]
+statesearch_iterator_l8x7 boards player count minmax
 	| null boards								= []
-	| otherwise									= [(statesearch_helper (fst (head boards)) player count minmax 0)] ++ 
-												  (statesearch_iterator (tail boards) player count minmax)
+	| otherwise									= [(statesearch_helper_l8x7 (fst (head boards)) player count minmax 0)] ++ 
+												  (statesearch_iterator_l8x7 (tail boards) player count minmax)
 
-statesearch_helper :: [String] -> Char -> Int -> Int -> Int -> ([String], Int)
-statesearch_helper board player count minmax start
-	| start == 1 && count == 0 && minmax == 1	= getMaxHeuristics 
-													(generateNewStates board player player) 
-													(["dummy"], (negate((length board) * (length board))))
-	| start == 1 && count == 0 && minmax == -1	= getMinHeuristics 
-													(generateNewStates board (getOpponentMarker player) player) 
-													(["dummy"], ((length board) * (length board)))
-	| start == 1 && minmax == 1					= getMaxHeuristics 
-													(statesearch_iterator 
-														(generateNewStates board player player) 
+-- if it is the first call to this function, start = 1
+-- start flag used for checking whether the current board is 
+-- the very top level
+statesearch_helper_l8x7 :: [String] -> Char -> Int -> Int -> Int -> ([String], Int)
+statesearch_helper_l8x7 board player count minmax start
+	| start == 1 && count == 0 && minmax == 1	= getMaxHeuristics_l8x7 
+													(generateNewStates_l8x7 board player player) 
+													(board, (negate((length board) * (length board))))
+	-- not needed if, this program should be called when 
+	-- it is MAX's turn to move
+	| start == 1 && count == 0 && minmax == -1	= getMinHeuristics_l8x7 
+													(generateNewStates_l8x7 board (getOpponentMarker_l8x7 player) player) 
+													(board, ((length board) * (length board)))
+	| start == 1 && minmax == 1					= getMaxHeuristics_l8x7 
+													(statesearch_iterator_l8x7 
+														(generateNewStates_l8x7 board player player) 
 														player 
 														(count - 1) 
 														(negate minmax))
-													(["dummy"], (negate((length board) * (length board))))
-	| start == 1 && minmax == -1				= getMinHeuristics 
-													(statesearch_iterator 
-														(generateNewStates board (getOpponentMarker player) player) 
+													(board, (negate((length board) * (length board))))
+	-- not needed if, this program should be called when 
+	-- it is MAX's turn to move
+	| start == 1 && minmax == -1				= getMinHeuristics_l8x7 
+													(statesearch_iterator_l8x7 
+														(generateNewStates_l8x7 board (getOpponentMarker_l8x7 player) player) 
 														player 
 														(count - 1) 
 														(negate minmax)) 
-													(["dummy"], ((length board) * (length board)))
-	| count == 0 && minmax == 1					= (board, snd (getMaxHeuristics 
-													(generateNewStates board player player) 
-													(["dummy"], (negate((length board) * (length board))))))
-	| count == 0 && minmax == -1				= (board, snd (getMinHeuristics 
-													(generateNewStates board (getOpponentMarker player) player) 
-													(["dummy"], ((length board) * (length board)))))
-	| minmax == 1								= (board, snd (getMaxHeuristics 
-													(statesearch_iterator 
-														(generateNewStates board player player) 
+													(board, ((length board) * (length board)))
+	-- base case, for MAX's turn
+	| count == 0 && minmax == 1					= (board, snd (getMaxHeuristics_l8x7 
+													(generateNewStates_l8x7 board player player) 
+													(board, (negate((length board) * (length board))))))
+	-- base case, for MIN's turn
+	| count == 0 && minmax == -1				= (board, snd (getMinHeuristics_l8x7 
+													(generateNewStates_l8x7 board (getOpponentMarker_l8x7 player) player) 
+													(board, ((length board) * (length board)))))
+	| minmax == 1								= (board, snd (getMaxHeuristics_l8x7 
+													(statesearch_iterator_l8x7 
+														(generateNewStates_l8x7 board player player) 
 														player 
 														(count - 1) 
 														(negate minmax))
-													(["dummy"], (negate((length board) * (length board))))))
-	| otherwise									= (board, snd (getMinHeuristics 
-													(statesearch_iterator 
-														(generateNewStates board (getOpponentMarker player) player) 
+													(board, (negate((length board) * (length board))))))
+	| otherwise									= (board, snd (getMinHeuristics_l8x7 
+													(statesearch_iterator_l8x7 
+														(generateNewStates_l8x7 board (getOpponentMarker_l8x7 player) player) 
 														player 
 														(count - 1) 
 														(negate minmax)) 
-													(["dummy"], ((length board) * (length board)))))
+													(board, ((length board) * (length board)))))
 	
 
 
-
-getOpponentMarker :: Char -> Char
-getOpponentMarker player
+getOpponentMarker_l8x7 :: Char -> Char
+getOpponentMarker_l8x7 player
 	| player == 'w'			= 'b'
 	| otherwise				= 'w'
 	
 -- evalAs will always be the current player
 -- player will change depending on whose move
--- generateNewStates
-generateNewStates :: [String] -> Char -> Char -> [([String], Int)]
-generateNewStates board player evalAs
-	| player == 'w' 			= filter 
-								  (/= (board, evaluateBoard board evalAs))
-						          (generateNewStatesIterator board player evalAs (getWhitePos board))
-	| otherwise					= filter 
-								  (/= (board, evaluateBoard board evalAs))
-								  (generateNewStatesIterator board player evalAs (getBlackPos board))
 
-generateNewStatesIterator :: [String] -> Char -> Char -> [(Int, Int)] -> [([String], Int)]
-generateNewStatesIterator board player evalAs pos
+-- generate all possible state different from the current state
+generateNewStates_l8x7 :: [String] -> Char -> Char -> [([String], Int)]
+generateNewStates_l8x7 board player evalAs
+	| player == 'w' 			= filter 
+								  (/= (board, evaluateBoard_l8x7 board evalAs))
+						          (generateNewStatesIterator_l8x7 board player evalAs (getWhitePos_l8x7 board))
+	| otherwise					= filter 
+								  (/= (board, evaluateBoard_l8x7 board evalAs))
+								  (generateNewStatesIterator_l8x7 board player evalAs (getBlackPos_l8x7 board))
+
+								  -- iterate through each piece and move them
+generateNewStatesIterator_l8x7 :: [String] -> Char -> Char -> [(Int, Int)] -> [([String], Int)]
+generateNewStatesIterator_l8x7 board player evalAs pos
 	| null pos				= []
 	| otherwise				= 
-		(generateNewStatesHelper board player evalAs (head pos)) ++ (generateNewStatesIterator board player evalAs (tail pos))
-	
-generateNewStatesHelper :: [String] -> Char -> Char -> (Int,Int) -> [([String], Int)]
-generateNewStatesHelper board player evalAs pos 
-	| player == 'w'				= [(moveBL board player pos, evaluateBoard (moveBL board player pos) evalAs)] ++ 
-								  [(moveBR board player pos, evaluateBoard (moveBR board player pos) evalAs)]
-	| otherwise					= [(moveUL board player pos, evaluateBoard (moveUL board player pos) evalAs)] ++ 
-								  [(moveUR board player pos, evaluateBoard (moveUR board player pos) evalAs)]
+		(generateNewStatesHelper_l8x7 board player evalAs (head pos)) ++ (generateNewStatesIterator_l8x7 board player evalAs (tail pos))
+
+		-- return all possible moves for the current board and piece
+generateNewStatesHelper_l8x7 :: [String] -> Char -> Char -> (Int,Int) -> [([String], Int)]
+generateNewStatesHelper_l8x7 board player evalAs pos 
+	| player == 'w'				= [(moveBL_l8x7 board player pos, evaluateBoard_l8x7 (moveBL_l8x7 board player pos) evalAs)] ++ 
+								  [(moveBR_l8x7 board player pos, evaluateBoard_l8x7 (moveBR_l8x7 board player pos) evalAs)]
+	| otherwise					= [(moveUL_l8x7 board player pos, evaluateBoard_l8x7 (moveUL_l8x7 board player pos) evalAs)] ++ 
+								  [(moveUR_l8x7 board player pos, evaluateBoard_l8x7 (moveUR_l8x7 board player pos) evalAs)]
 
 
 								  
 -- get the max heuristics value from the list
-getMaxHeuristics :: [([String], Int)] -> ([String], Int) -> ([String], Int)
-getMaxHeuristics states best
+getMaxHeuristics_l8x7 :: [([String], Int)] -> ([String], Int) -> ([String], Int)
+getMaxHeuristics_l8x7 states best
 	| null states							= best
-	| (snd (head states)) > (snd best)		= getMaxHeuristics (tail states) (head states)
-	| otherwise								= getMaxHeuristics (tail states) best
+	| (snd (head states)) > (snd best)		= getMaxHeuristics_l8x7 (tail states) (head states)
+	| otherwise								= getMaxHeuristics_l8x7 (tail states) best
 -- get the min heuristics value from the list
-getMinHeuristics :: [([String], Int)] -> ([String], Int) -> ([String], Int)
-getMinHeuristics states best
+getMinHeuristics_l8x7 :: [([String], Int)] -> ([String], Int) -> ([String], Int)
+getMinHeuristics_l8x7 states best
 	| null states							= best
-	| (snd (head states)) < (snd best)		= getMinHeuristics (tail states) (head states)
-	| otherwise								= getMinHeuristics (tail states) best
+	| (snd (head states)) < (snd best)		= getMinHeuristics_l8x7 (tail states) (head states)
+	| otherwise								= getMinHeuristics_l8x7 (tail states) best
 	
 
 	
@@ -205,344 +127,337 @@ getMinHeuristics states best
 -- -n^2				: own pieces are removed
 -- opponent - own	: steps to the end zone
 -- ASSUME: w is always moving down
-evaluateBoard :: [String] -> Char -> Int
-evaluateBoard board player
+evaluateBoard_l8x7 :: [String] -> Char -> Int
+evaluateBoard_l8x7 board player
 	-- TODO return what for draw???
-	| checkDraw board 						= ((length board) * (length board))
-	| checkPlayerWin board player			= ((length board) * (length board))
-	| checkOpponentWin board player			= negate ((length board) * (length board))
-	| otherwise								= getOpponentDistance board player - getPlayerDistance board player
+	| checkDraw_l8x7 board 						= ((length board) * (length board))
+	| checkPlayerWin_l8x7 board player			= ((length board) * (length board))
+	| checkOpponentWin_l8x7 board player			= negate ((length board) * (length board))
+	| otherwise								= getOpponentDistance_l8x7 board player - getPlayerDistance_l8x7 board player
 
-checkDraw :: [String] -> Bool
-checkDraw board = (checkBothAtEndZone board) && ((length (getWhitePos board)) == (length (getBlackPos board)))
+checkDraw_l8x7 :: [String] -> Bool
+checkDraw_l8x7 board = (checkBothAtEndZone_l8x7 board) && ((length (getWhitePos_l8x7 board)) == (length (getBlackPos_l8x7 board)))
 
-checkPlayerWin :: [String] -> Char -> Bool
-checkPlayerWin board player 
-	| player == 'w' && null (getWhitePos board)					= False
-	| player == 'b' && null (getBlackPos board)					= False
-	| player == 'w' && (checkBothAtEndZone board) && 
-	  (length (getWhitePos board) > length (getBlackPos board)) = True
-	| player == 'w' && (checkBothAtEndZone board) &&
-	  (length (getBlackPos board) > length (getWhitePos board)) = False
-	| player == 'b' && (checkBothAtEndZone board) &&
-	  (length (getBlackPos board) > length (getWhitePos board)) = True
-	| player == 'b' && (checkBothAtEndZone board) &&
-	  (length (getBlackPos board) < length (getWhitePos board)) = False
+checkPlayerWin_l8x7 :: [String] -> Char -> Bool
+checkPlayerWin_l8x7 board player 
+	| player == 'w' && null (getWhitePos_l8x7 board)					= False
+	| player == 'b' && null (getBlackPos_l8x7 board)					= False
+	| player == 'w' && (checkBothAtEndZone_l8x7 board) && 
+	  (length (getWhitePos_l8x7 board) > length (getBlackPos_l8x7 board)) = True
+	| player == 'w' && (checkBothAtEndZone_l8x7 board) &&
+	  (length (getBlackPos_l8x7 board) > length (getWhitePos_l8x7 board)) = False
+	| player == 'b' && (checkBothAtEndZone_l8x7 board) &&
+	  (length (getBlackPos_l8x7 board) > length (getWhitePos_l8x7 board)) = True
+	| player == 'b' && (checkBothAtEndZone_l8x7 board) &&
+	  (length (getBlackPos_l8x7 board) < length (getWhitePos_l8x7 board)) = False
 	| player == 'w'	&& 
-	  ((length (getBlackPos board)) == 0 || 
-	  (checkEndZone (getWhitePos board) ((length board) - 1)))	= True
+	  ((length (getBlackPos_l8x7 board)) == 0 || 
+	  (checkEndZone_l8x7 (getWhitePos_l8x7 board) ((length board) - 1)))	= True
 	| player == 'b'	&& 
-	  ((length (getWhitePos board)) == 0 || 
-	  (checkEndZone (getBlackPos board) 0))						= True
+	  ((length (getWhitePos_l8x7 board)) == 0 || 
+	  (checkEndZone_l8x7 (getBlackPos_l8x7 board) 0))						= True
 	| otherwise													= False
 
-checkOpponentWin :: [String] -> Char -> Bool
-checkOpponentWin board player
-	| player == 'w'							= checkPlayerWin board 'b'
-	| otherwise								= checkPlayerWin board 'w'
+checkOpponentWin_l8x7 :: [String] -> Char -> Bool
+checkOpponentWin_l8x7 board player
+	| player == 'w'							= checkPlayerWin_l8x7 board 'b'
+	| otherwise								= checkPlayerWin_l8x7 board 'w'
 	
-checkEndZone :: [(Int, Int)] -> Int -> Bool
-checkEndZone pos n
+checkEndZone_l8x7 :: [(Int, Int)] -> Int -> Bool
+checkEndZone_l8x7 pos n
 	| null pos							= True
-	| (snd (head pos)) == n				= checkEndZone (tail pos) n
+	| (snd (head pos)) == n				= checkEndZone_l8x7 (tail pos) n
 	| otherwise							= False
 
-checkBothAtEndZone :: [String] -> Bool
-checkBothAtEndZone board = (checkEndZone (getWhitePos board) ((length board) - 1)) &&
-								  (checkEndZone (getBlackPos board) 0)
+checkBothAtEndZone_l8x7 :: [String] -> Bool
+checkBothAtEndZone_l8x7 board = (checkEndZone_l8x7 (getWhitePos_l8x7 board) ((length board) - 1)) &&
+								  (checkEndZone_l8x7 (getBlackPos_l8x7 board) 0)
 	
-getPlayerDistance :: [String] -> Char -> Int
-getPlayerDistance board player
-	| player == 'w'							= getDistance (getWhitePos board) ((length board) - 1)
-	| otherwise								= getDistance (getBlackPos board) 0
+getPlayerDistance_l8x7 :: [String] -> Char -> Int
+getPlayerDistance_l8x7 board player
+	| player == 'w'							= getDistance_l8x7 (getWhitePos_l8x7 board) ((length board) - 1)
+	| otherwise								= getDistance_l8x7 (getBlackPos_l8x7 board) 0
 
-getOpponentDistance :: [String] -> Char -> Int
-getOpponentDistance board player
-	| player == 'w'							= getDistance (getBlackPos board) 0
-	| otherwise								= getDistance (getWhitePos board) ((length board) - 1)
+getOpponentDistance_l8x7 :: [String] -> Char -> Int
+getOpponentDistance_l8x7 board player
+	| player == 'w'							= getDistance_l8x7 (getBlackPos_l8x7 board) 0
+	| otherwise								= getDistance_l8x7 (getWhitePos_l8x7 board) ((length board) - 1)
 	
-getDistance :: [(Int, Int)] -> Int -> Int
-getDistance pos endZone
+getDistance_l8x7 :: [(Int, Int)] -> Int -> Int
+getDistance_l8x7 pos endZone
 	| null pos								= 0
-	| endZone == 0							= (snd (head pos)) + (getDistance (tail pos) endZone)
-	| otherwise								= endZone - (snd (head pos)) + (getDistance (tail pos) endZone)
+	| endZone == 0							= (snd (head pos)) + (getDistance_l8x7 (tail pos) endZone)
+	| otherwise								= endZone - (snd (head pos)) + (getDistance_l8x7 (tail pos) endZone)
 	
---complete 
 --getCharPos: returns the tuple (x,y) position of a given character in the game board
-getWhitePos :: [String] -> [(Int, Int)]
-getWhitePos a = getCharPos a 'w'
-getBlackPos :: [String] -> [(Int, Int)]
-getBlackPos a = getCharPos a 'b'
+getWhitePos_l8x7 :: [String] -> [(Int, Int)]
+getWhitePos_l8x7 a = getCharPos_l8x7 a 'w'
+getBlackPos_l8x7 :: [String] -> [(Int, Int)]
+getBlackPos_l8x7 a = getCharPos_l8x7 a 'b'
 
-getCharPos :: [String] -> Char -> [(Int, Int)] 
-getCharPos board char = getCharPos_helper board char 0
+getCharPos_l8x7 :: [String] -> Char -> [(Int, Int)] 
+getCharPos_l8x7 board char = getCharPos_helper_l8x7 board char 0
 
-getCharPos_helper :: [String] -> Char -> Int -> [(Int, Int)] 
-getCharPos_helper board char y
+getCharPos_helper_l8x7 :: [String] -> Char -> Int -> [(Int, Int)] 
+getCharPos_helper_l8x7 board char y
 	| board == []			= []
-	| otherwise 			= (getCharPosInRow (head board) char y)++(getCharPos_helper (tail board) char (y+1))
+	| otherwise 			= (getCharPosInRow_l8x7 (head board) char y)++(getCharPos_helper_l8x7 (tail board) char (y+1))
 
-getCharPosInRow :: String -> Char -> Int -> [(Int, Int)]
-getCharPosInRow row char y = getCharPosInRow_helper row char 0 y
+getCharPosInRow_l8x7 :: String -> Char -> Int -> [(Int, Int)]
+getCharPosInRow_l8x7 row char y = getCharPosInRow_helper_l8x7 row char 0 y
 
-getCharPosInRow_helper :: String -> Char -> Int -> Int -> [(Int, Int)] 
-getCharPosInRow_helper row char x y
+getCharPosInRow_helper_l8x7 :: String -> Char -> Int -> Int -> [(Int, Int)] 
+getCharPosInRow_helper_l8x7 row char x y
 	| row == []			= []
-	| head row == char		= (x,y):getCharPosInRow_helper (tail row) char (x+1) y
-	| otherwise			= getCharPosInRow_helper (tail row) char (x+1) y
+	| head row == char		= (x,y):getCharPosInRow_helper_l8x7 (tail row) char (x+1) y
+	| otherwise			= getCharPosInRow_helper_l8x7 (tail row) char (x+1) y
 
 	
--- complete
 --moveBL: Moves a char to the bottom left
-moveBL :: [String] -> Char -> (Int, Int) -> [String]
-moveBL board char piece = moveBL_helper board char piece (checkMoveBL board char piece)
+moveBL_l8x7 :: [String] -> Char -> (Int, Int) -> [String]
+moveBL_l8x7 board char piece = moveBL_helper_l8x7 board char piece (checkMoveBL_l8x7 board char piece)
 
-moveBL_helper :: [String] -> Char -> (Int, Int) -> Int -> [String]
-moveBL_helper board char piece n
+moveBL_helper_l8x7 :: [String] -> Char -> (Int, Int) -> Int -> [String]
+moveBL_helper_l8x7 board char piece n
 	| n == 0		= board
 	| n > 2			= board
-	| pieceIsBottomHalf board piece
-				= moveBL_helper (moveDirectlyBelow board char piece) char ((fst piece) -1, (snd piece) +1) (n-1)
-	| pieceIsTopHalf board piece	
-				= moveBL_helper (moveLeftBelow board char piece) char ((fst piece) -1, (snd piece) +1) (n-1)
+	| pieceIsBottomHalf_l8x7 board piece
+				= moveBL_helper_l8x7 (moveDirectlyBelow_l8x7 board char piece) char ((fst piece) -1, (snd piece) +1) (n-1)
+	| pieceIsTopHalf_l8x7 board piece	
+				= moveBL_helper_l8x7 (moveLeftBelow_l8x7 board char piece) char ((fst piece) -1, (snd piece) +1) (n-1)
 
 
--- complete
 --moveBR: Moves a char to the bottom right
-moveBR :: [String] -> Char -> (Int, Int) -> [String]
-moveBR board char piece = moveBR_helper  board char piece (checkMoveBR board char piece)
+moveBR_l8x7 :: [String] -> Char -> (Int, Int) -> [String]
+moveBR_l8x7 board char piece = moveBR_helper_l8x7  board char piece (checkMoveBR_l8x7 board char piece)
 
-moveBR_helper :: [String] -> Char -> (Int, Int) -> Int -> [String]
-moveBR_helper board char piece n
+moveBR_helper_l8x7 :: [String] -> Char -> (Int, Int) -> Int -> [String]
+moveBR_helper_l8x7 board char piece n
 	| n == 0		= board
 	| n > 2			= board
-	| pieceIsBottomHalf board piece
-				= moveBR_helper (moveRightBelow board char piece) char ((fst piece) +1, (snd piece) +1) (n-1)
-	| pieceIsTopHalf board piece	
-				= moveBR_helper (moveDirectlyBelow board char piece) char ((fst piece), (snd piece) +1) (n-1)
+	| pieceIsBottomHalf_l8x7 board piece
+				= moveBR_helper_l8x7 (moveRightBelow_l8x7 board char piece) char ((fst piece) +1, (snd piece) +1) (n-1)
+	| pieceIsTopHalf_l8x7 board piece	
+				= moveBR_helper_l8x7 (moveDirectlyBelow_l8x7 board char piece) char ((fst piece), (snd piece) +1) (n-1)
 
 
---complete
 --moveUL: Moves a char to the upper left
-moveUL :: [String] -> Char -> (Int, Int) -> [String]
-moveUL board char piece =  moveUL_helper  board char piece (checkMoveUL board char piece)
+moveUL_l8x7 :: [String] -> Char -> (Int, Int) -> [String]
+moveUL_l8x7 board char piece =  moveUL_helper_l8x7  board char piece (checkMoveUL_l8x7 board char piece)
 	
-moveUL_helper :: [String] -> Char -> (Int, Int) -> Int -> [String]
-moveUL_helper  board char piece n
+moveUL_helper_l8x7 :: [String] -> Char -> (Int, Int) -> Int -> [String]
+moveUL_helper_l8x7  board char piece n
 	| n == 0		= board
 	| n > 2			= board
-	| pieceIsTopHalf board piece	
-				=  moveUL_helper (moveDirectlyAbove board char piece) char ((fst piece), (snd piece) -1) (n-1)
-	| pieceIsBottomHalf board piece
-				=  moveUL_helper (moveLeftAbove board char piece) char ((fst piece) -1, (snd piece) -1) (n-1)
+	| pieceIsTopHalf_l8x7 board piece	
+				=  moveUL_helper_l8x7 (moveDirectlyAbove_l8x7 board char piece) char ((fst piece), (snd piece) -1) (n-1)
+	| pieceIsBottomHalf_l8x7 board piece
+				=  moveUL_helper_l8x7 (moveLeftAbove_l8x7 board char piece) char ((fst piece) -1, (snd piece) -1) (n-1)
 
 
--- complete
-moveUR :: [String] -> Char -> (Int, Int) -> [String]
-moveUR board char piece = moveUR_helper board char piece (checkMoveUR board char piece)
+--moveUR: Moves a char to the upper right
+moveUR_l8x7 :: [String] -> Char -> (Int, Int) -> [String]
+moveUR_l8x7 board char piece = moveUR_helper_l8x7 board char piece (checkMoveUR_l8x7 board char piece)
 
-moveUR_helper :: [String] -> Char -> (Int, Int) -> Int -> [String]
-moveUR_helper board char piece n
+moveUR_helper_l8x7 :: [String] -> Char -> (Int, Int) -> Int -> [String]
+moveUR_helper_l8x7 board char piece n
 	| n == 0		= board
 	| n > 2			= board
-	| pieceIsTopHalf board piece	
-				= moveUR_helper (moveRightAbove board char piece) char ((fst piece) +1, (snd piece) -1) (n-1)
-	| pieceIsBottomHalf board piece
-				= moveUR_helper (moveDirectlyAbove board char piece) char ((fst piece), (snd piece) -1) (n-1)
+	| pieceIsTopHalf_l8x7 board piece	
+				= moveUR_helper_l8x7 (moveRightAbove_l8x7 board char piece) char ((fst piece) +1, (snd piece) -1) (n-1)
+	| pieceIsBottomHalf_l8x7 board piece
+				= moveUR_helper_l8x7 (moveDirectlyAbove_l8x7 board char piece) char ((fst piece), (snd piece) -1) (n-1)
 
 
-
---complete
-checkMoveBL :: [String] -> Char -> (Int, Int) -> Int
-checkMoveBL board char piece
-	| (pieceIsBottomHalf board piece) /= True && 
+-- check if it is possible to move or jump to bottom left
+checkMoveBL_l8x7 :: [String] -> Char -> (Int, Int) -> Int
+checkMoveBL_l8x7 board char piece
+	| (pieceIsBottomHalf_l8x7 board piece) /= True && 
 	  (fst piece) == 0
 											= 0
 	| (snd piece) == ((length board) -1)						= 0
-	| (pieceIsBottomHalf board piece) && 
+	| (pieceIsBottomHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) + 1)) !! (fst piece) == '-')
 											= 1
-	| (pieceIsBottomHalf board piece) && 
+	| (pieceIsBottomHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) + 1)) !! (fst piece) /= char)
-					= (2 * checkMoveBL board char (movePieceDirectlyBelow piece))
+					= (2 * checkMoveBL_l8x7 board char (movePieceDirectlyBelow_l8x7 piece))
 
-	| (pieceIsTopHalf board piece) && 
-	  (pieceIsCenter board piece) /= True &&
+	| (pieceIsTopHalf_l8x7 board piece) && 
+	  (pieceIsCenter_l8x7 board piece) /= True &&
 	  ((board !! ((snd piece) + 1)) !! ((fst piece) - 1) == '-')
 											= 1
 	-- Checks for jumping over
-	| (pieceIsTopHalf board piece) && 
-	  (pieceIsCenter board piece) /= True &&
+	| (pieceIsTopHalf_l8x7 board piece) && 
+	  (pieceIsCenter_l8x7 board piece) /= True &&
 	  ((board !! ((snd piece) + 1)) !! ((fst piece) - 1) /= char)			
-					= (2 * checkMoveBL board char (movePieceLeftBelow piece))
+					= (2 * checkMoveBL_l8x7 board char (movePieceLeftBelow_l8x7 piece))
 	| otherwise					 				= 0
 	
 
 
--- complete
-checkMoveBR :: [String] -> Char -> (Int, Int) -> Int
-checkMoveBR board char piece
-	| (pieceIsBottomHalf board piece) /= True && 
+-- check if it is possible to move or jump to bottom right
+checkMoveBR_l8x7 :: [String] -> Char -> (Int, Int) -> Int
+checkMoveBR_l8x7 board char piece
+	| (pieceIsBottomHalf_l8x7 board piece) /= True && 
 	  (fst piece) == ((length (board !! snd piece)) - 1)
 											= 0
 	| (snd piece) == ((length board) -1)						= 0
-	| (pieceIsBottomHalf board piece) && 
+	| (pieceIsBottomHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) + 1)) !! ((fst piece) + 1) == '-')
 											= 1
-	| (pieceIsBottomHalf board piece) && 
+	| (pieceIsBottomHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) + 1)) !! ((fst piece) + 1) /= char)							
-					= (2 * checkMoveBR board char (movePieceRightBelow piece))
-	| (pieceIsTopHalf board piece) && 
+					= (2 * checkMoveBR_l8x7 board char (movePieceRightBelow_l8x7 piece))
+	| (pieceIsTopHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) + 1)) !! (fst piece) == '-')
 											= 1
-	| (pieceIsTopHalf board piece) && 
+	| (pieceIsTopHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) + 1)) !! (fst piece) /= char)				
-					= (2 * checkMoveBR board char (movePieceDirectlyBelow piece))
+					= (2 * checkMoveBR_l8x7 board char (movePieceDirectlyBelow_l8x7 piece))
 	
 	| otherwise					 				= 0
 
 
--- complete
-checkMoveUL :: [String] -> Char -> (Int, Int) -> Int
-checkMoveUL board char piece 
-	| (pieceIsTopHalf board piece) /= True && 
+-- check if it is possible to move or jump to upper left
+checkMoveUL_l8x7 :: [String] -> Char -> (Int, Int) -> Int
+checkMoveUL_l8x7 board char piece 
+	| (pieceIsTopHalf_l8x7 board piece) /= True && 
 	  (fst piece) == 0
 											= 0
 	| (snd piece) == 0								= 0
-	| (pieceIsTopHalf board piece) && 
+	| (pieceIsTopHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) - 1)) !! (fst piece) == '-')
 											= 1
-	| (pieceIsTopHalf board piece) && 
+	| (pieceIsTopHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) - 1)) !! (fst piece) /= char)
-					= (2 * checkMoveUL board char (movePieceDirectlyAbove piece))
-	| (pieceIsBottomHalf board piece) && 
+					= (2 * checkMoveUL_l8x7 board char (movePieceDirectlyAbove_l8x7 piece))
+	| (pieceIsBottomHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) - 1)) !! ((fst piece) - 1) == '-')
 											= 1
-	| (pieceIsBottomHalf board piece) && 
+	| (pieceIsBottomHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) - 1)) !! ((fst piece) - 1) /= char)
-					= (2 * checkMoveUL board char (movePieceLeftAbove piece))
+					= (2 * checkMoveUL_l8x7 board char (movePieceLeftAbove_l8x7 piece))
 	| otherwise					 			= 0
 	
 
 
--- incomplete
-checkMoveUR :: [String] -> Char -> (Int, Int) -> Int
-checkMoveUR board char piece
-	| (pieceIsTopHalf board piece) /= True && 
+-- check if it is possible to move or jump to upper right
+checkMoveUR_l8x7 :: [String] -> Char -> (Int, Int) -> Int
+checkMoveUR_l8x7 board char piece
+	| (pieceIsTopHalf_l8x7 board piece) /= True && 
 	  (fst piece) == ((length (board !! snd piece)) - 1)
 											= 0
 	| (snd piece) == 0								= 0
-	| (pieceIsTopHalf board piece) && 
+	| (pieceIsTopHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) - 1)) !! ((fst piece) + 1) == '-')
 											= 1
-	| (pieceIsTopHalf board piece) && 
+	| (pieceIsTopHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) - 1)) !! ((fst piece) + 1) == char)
-					=  (2 * checkMoveUR board char (movePieceRightAbove piece))
-	| (pieceIsBottomHalf board piece) && 
+					=  (2 * checkMoveUR_l8x7 board char (movePieceRightAbove_l8x7 piece))
+	| (pieceIsBottomHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) - 1)) !! (fst piece) == '-')
 											= 1
-	| (pieceIsBottomHalf board piece) && 
+	| (pieceIsBottomHalf_l8x7 board piece) && 
 	  ((board !! ((snd piece) - 1)) !! (fst piece) /= char)
-					=  (2 * checkMoveUR board char (movePieceDirectlyAbove piece))
+					=  (2 * checkMoveUR_l8x7 board char (movePieceDirectlyAbove_l8x7 piece))
 	| otherwise					 			= 0
 
 	
--- complete
 -- Move Helpers
 
 -- move char to x, y+1 relative to current x, y
-moveDirectlyBelow :: [String] -> Char -> (Int, Int) -> [String]
-moveDirectlyBelow board char piece	=
-				(nthhead board (snd piece)) ++
-				([(nthhead (board !! (snd piece)) (fst piece)) ++
-				('-':(nthtail (board !! (snd piece)) (fst piece)))]) ++
-				([(nthhead (board !! ((snd piece) + 1)) (fst piece)) ++
-				(char:(nthtail (board !! ((snd piece) + 1)) (fst piece)))]) ++
-				(nthtail board ((snd piece) + 1))
+moveDirectlyBelow_l8x7 :: [String] -> Char -> (Int, Int) -> [String]
+moveDirectlyBelow_l8x7 board char piece	=
+				(nthhead_l8x7 board (snd piece)) ++
+				([(nthhead_l8x7 (board !! (snd piece)) (fst piece)) ++
+				('-':(nthtail_l8x7 (board !! (snd piece)) (fst piece)))]) ++
+				([(nthhead_l8x7 (board !! ((snd piece) + 1)) (fst piece)) ++
+				(char:(nthtail_l8x7 (board !! ((snd piece) + 1)) (fst piece)))]) ++
+				(nthtail_l8x7 board ((snd piece) + 1))
 
-movePieceDirectlyBelow piece =	((fst piece), (snd piece + 1))
+movePieceDirectlyBelow_l8x7 piece =	((fst piece), (snd piece + 1))
 
 -- move char to x+1, y+1 relative to current x, y
-moveRightBelow :: [String] -> Char -> (Int, Int) -> [String]
-moveRightBelow board char piece	=
-				(nthhead board (snd piece)) ++
-				([(nthhead (board !! (snd piece)) (fst piece)) ++
-				('-':(nthtail (board !! (snd piece)) (fst piece)))]) ++
-				([(nthhead (board !! ((snd piece) + 1)) ((fst piece) + 1)) ++
-				(char:(nthtail (board !! ((snd piece) + 1)) ((fst piece) + 1)))]) ++
-				(nthtail board ((snd piece) + 1))
+moveRightBelow_l8x7 :: [String] -> Char -> (Int, Int) -> [String]
+moveRightBelow_l8x7 board char piece	=
+				(nthhead_l8x7 board (snd piece)) ++
+				([(nthhead_l8x7 (board !! (snd piece)) (fst piece)) ++
+				('-':(nthtail_l8x7 (board !! (snd piece)) (fst piece)))]) ++
+				([(nthhead_l8x7 (board !! ((snd piece) + 1)) ((fst piece) + 1)) ++
+				(char:(nthtail_l8x7 (board !! ((snd piece) + 1)) ((fst piece) + 1)))]) ++
+				(nthtail_l8x7 board ((snd piece) + 1))
 				
-movePieceRightBelow piece = ((fst piece + 1), (snd piece + 1))
+movePieceRightBelow_l8x7 piece = ((fst piece + 1), (snd piece + 1))
 
 -- move char to x-1, y+1 relative to current x, y
-moveLeftBelow :: [String] -> Char -> (Int, Int) -> [String]
-moveLeftBelow board char piece	=
-				(nthhead board (snd piece)) ++
-				([(nthhead (board !! (snd piece)) (fst piece)) ++
-				('-':(nthtail (board !! (snd piece)) (fst piece)))]) ++
-				([(nthhead (board !! ((snd piece) + 1)) ((fst piece) - 1)) ++
-				(char:(nthtail (board !! ((snd piece) + 1)) ((fst piece) - 1)))]) ++
-				(nthtail board ((snd piece) + 1))
+moveLeftBelow_l8x7 :: [String] -> Char -> (Int, Int) -> [String]
+moveLeftBelow_l8x7 board char piece	=
+				(nthhead_l8x7 board (snd piece)) ++
+				([(nthhead_l8x7 (board !! (snd piece)) (fst piece)) ++
+				('-':(nthtail_l8x7 (board !! (snd piece)) (fst piece)))]) ++
+				([(nthhead_l8x7 (board !! ((snd piece) + 1)) ((fst piece) - 1)) ++
+				(char:(nthtail_l8x7 (board !! ((snd piece) + 1)) ((fst piece) - 1)))]) ++
+				(nthtail_l8x7 board ((snd piece) + 1))
 
-movePieceLeftBelow piece = ((fst piece - 1), (snd piece + 1))
+movePieceLeftBelow_l8x7 piece = ((fst piece - 1), (snd piece + 1))
 
 -- move char to x, y-1 relative to current x, y
-moveDirectlyAbove :: [String] -> Char -> (Int, Int) -> [String]
-moveDirectlyAbove board char piece	=
-				(nthhead board ((snd piece) - 1)) ++
-				([(nthhead (board !! ((snd piece) - 1)) (fst piece)) ++
-				(char:(nthtail (board !! ((snd piece) - 1)) (fst piece)))]) ++
-				([(nthhead (board !! (snd piece)) (fst piece)) ++
-				('-':(nthtail (board !! (snd piece)) (fst piece)))]) ++
-				(nthtail board (snd piece))
+moveDirectlyAbove_l8x7 :: [String] -> Char -> (Int, Int) -> [String]
+moveDirectlyAbove_l8x7 board char piece	=
+				(nthhead_l8x7 board ((snd piece) - 1)) ++
+				([(nthhead_l8x7 (board !! ((snd piece) - 1)) (fst piece)) ++
+				(char:(nthtail_l8x7 (board !! ((snd piece) - 1)) (fst piece)))]) ++
+				([(nthhead_l8x7 (board !! (snd piece)) (fst piece)) ++
+				('-':(nthtail_l8x7 (board !! (snd piece)) (fst piece)))]) ++
+				(nthtail_l8x7 board (snd piece))
 
-movePieceDirectlyAbove piece = ((fst piece), (snd piece - 1))
+movePieceDirectlyAbove_l8x7 piece = ((fst piece), (snd piece - 1))
 
 -- move char to x-1, y-1 relative to current x, y
-moveLeftAbove :: [String] -> Char -> (Int, Int) -> [String]
-moveLeftAbove board char piece	=
-				(nthhead board ((snd piece) - 1)) ++
-				([(nthhead (board !! ((snd piece) - 1)) ((fst piece) - 1)) ++
-				(char:(nthtail (board !! ((snd piece) - 1)) ((fst piece) - 1)))]) ++
-				([(nthhead (board !! (snd piece)) (fst piece)) ++
-				('-':(nthtail (board !! (snd piece)) (fst piece)))]) ++
-				(nthtail board (snd piece))
+moveLeftAbove_l8x7 :: [String] -> Char -> (Int, Int) -> [String]
+moveLeftAbove_l8x7 board char piece	=
+				(nthhead_l8x7 board ((snd piece) - 1)) ++
+				([(nthhead_l8x7 (board !! ((snd piece) - 1)) ((fst piece) - 1)) ++
+				(char:(nthtail_l8x7 (board !! ((snd piece) - 1)) ((fst piece) - 1)))]) ++
+				([(nthhead_l8x7 (board !! (snd piece)) (fst piece)) ++
+				('-':(nthtail_l8x7 (board !! (snd piece)) (fst piece)))]) ++
+				(nthtail_l8x7 board (snd piece))
 
-movePieceLeftAbove piece = ((fst piece - 1), (snd piece - 1))
+movePieceLeftAbove_l8x7 piece = ((fst piece - 1), (snd piece - 1))
 				
 -- move char to x+1, y-1 relative to current x, y
-moveRightAbove :: [String] -> Char -> (Int, Int) -> [String]
-moveRightAbove board char piece	=
-				(nthhead board ((snd piece) - 1)) ++
-				([(nthhead (board !! ((snd piece) - 1)) ((fst piece) + 1)) ++
-				(char:(nthtail (board !! ((snd piece) - 1)) ((fst piece) + 1)))]) ++
-				([(nthhead (board !! (snd piece)) (fst piece)) ++
-				('-':(nthtail (board !! (snd piece)) (fst piece)))]) ++
-				(nthtail board (snd piece))
+moveRightAbove_l8x7 :: [String] -> Char -> (Int, Int) -> [String]
+moveRightAbove_l8x7 board char piece	=
+				(nthhead_l8x7 board ((snd piece) - 1)) ++
+				([(nthhead_l8x7 (board !! ((snd piece) - 1)) ((fst piece) + 1)) ++
+				(char:(nthtail_l8x7 (board !! ((snd piece) - 1)) ((fst piece) + 1)))]) ++
+				([(nthhead_l8x7 (board !! (snd piece)) (fst piece)) ++
+				('-':(nthtail_l8x7 (board !! (snd piece)) (fst piece)))]) ++
+				(nthtail_l8x7 board (snd piece))
 
-movePieceRightAbove piece = ((fst piece + 1), (snd piece - 1))
+movePieceRightAbove_l8x7 piece = ((fst piece + 1), (snd piece - 1))
 
 -- return the elements after the index, not including the index row
-nthtail :: [a] -> Int -> [a]
-nthtail [] index = []
-nthtail (x:xs) index
+nthtail_l8x7 :: [a] -> Int -> [a]
+nthtail_l8x7 [] index = []
+nthtail_l8x7 (x:xs) index
 	| index == 0				= xs
-	| otherwise					= nthtail xs (index-1)  
+	| otherwise					= nthtail_l8x7 xs (index-1)  
 
 -- return the elements before the index, not including the index row
-nthhead :: [a] -> Int -> [a]
-nthhead [] index = []
-nthhead (x:xs) index
+nthhead_l8x7 :: [a] -> Int -> [a]
+nthhead_l8x7 [] index = []
+nthhead_l8x7 (x:xs) index
 	| index < 1					= []
 	| index == 1				= [x]
-	| otherwise					= x:(nthhead xs (index-1))
+	| otherwise					= x:(nthhead_l8x7 xs (index-1))
 
 	
---complete
 --pieceIsTopHalf: Checks whether the row to move to is shorter or longer. Middle counts as True.
-pieceIsTopHalf board piece = length board > ((snd piece) + (snd piece))
+pieceIsTopHalf_l8x7 board piece = length board > ((snd piece) + (snd piece))
 --pieceIsBottomHalf: Checks whether the row to move to is shorter or longer. Middle counts as True.
-pieceIsBottomHalf board piece = length board <= ((snd piece) + (snd piece) + 1)
+pieceIsBottomHalf_l8x7 board piece = length board <= ((snd piece) + (snd piece) + 1)
 
-pieceIsCenter board piece = length board == ((snd piece) + (snd piece) + 1)
+pieceIsCenter_l8x7 board piece = length board == ((snd piece) + (snd piece) + 1)
 
