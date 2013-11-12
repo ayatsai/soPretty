@@ -25,17 +25,29 @@ testEvaluateBoard6 = evaluateBoard ["----","---", "--", "---", "bbww"] 'b'
 testEvaluateBoard7 = evaluateBoard ["-bbb","---", "--", "---", "--ww"] 'w'
 testEvaluateBoard8 = evaluateBoard ["--bb","---", "--", "---", "--ww"] 'b'
 testGNS = generateNewStates ["w---","-w-", "--", "---", "bb-w"] 'w'
+testGNS2 = generateNewStates ["w-b-","-wb", "--", "---", "b--w"] 'b'
+testSS = statesearch ["w-b-","-wb", "--", "---", "b--w"] 'b'
 
 
 
 
+
+-- TODO: white moves first??? do we need to check for this?
+
+-- TODO: minimax algorithm here
+statesearch :: [String] -> Char -> [([String], Int)]
+statesearch board player = generateNewStates board player
 
 
 -- generateNewStates
 generateNewStates :: [String] -> Char -> [([String], Int)]
 generateNewStates board player
-	| player == 'w' 			= generateNewStatesIterator board player (getWhitePos board)
-	| otherwise					= generateNewStatesIterator board player (getBlackPos board)
+	| player == 'w' 			= filter 
+								  (/= (board, evaluateBoard board player))
+						          (generateNewStatesIterator board player (getWhitePos board))
+	| otherwise					= filter 
+								  (/= (board, evaluateBoard board player))
+								  (generateNewStatesIterator board player (getBlackPos board))
 
 generateNewStatesIterator :: [String] -> Char -> [(Int, Int)] -> [([String], Int)]
 generateNewStatesIterator board player pos
