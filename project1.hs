@@ -89,8 +89,6 @@ testSSH = statesearch_helper (generateNewStates testBoard 'w' 'w') 'b' 'b'
 -- oska :: [String] -> Char -> Int -> [String]
 
 
--- TODO: minimax algorithm here
-
 statesearch :: [String] -> Char -> Int -> [([String], Int)]
 statesearch board player count
 	| otherwise		 = getOptimalStates (statesearch_counter states 'w' player count) player (getMaxHeuristics (statesearch_counter states 'w' player count) (negate 25))
@@ -115,12 +113,13 @@ getOptimalStates states player max
 	| max == (snd (head states)) 	= (head states):(getOptimalStates (tail states) player max)
 	| otherwise			= getOptimalStates (tail states) player max
 
+-- get the max heuristics value from the list
 getMaxHeuristics :: [([String], Int)] -> Int -> Int
 getMaxHeuristics states value
 	| null states					= value
 	| (snd (head states)) > value	= getMaxHeuristics (tail states) (snd (head states))
 	| otherwise						= getMaxHeuristics (tail states) value
-
+-- get the min heuristics value from the list
 getMinHeuristics :: [([String], Int)] -> Int -> Int
 getMinHeuristics states value
 	| null states					= value
