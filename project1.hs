@@ -24,7 +24,32 @@ testEvaluateBoard5 = evaluateBoard ["----","---", "--", "---", "bbww"] 'w'
 testEvaluateBoard6 = evaluateBoard ["----","---", "--", "---", "bbww"] 'b'
 testEvaluateBoard7 = evaluateBoard ["-bbb","---", "--", "---", "--ww"] 'w'
 testEvaluateBoard8 = evaluateBoard ["--bb","---", "--", "---", "--ww"] 'b'
+testGNS = generateNewStates ["w---","-w-", "--", "---", "bb-w"] 'w'
 
+
+
+
+
+
+-- generateNewStates
+generateNewStates :: [String] -> Char -> [([String], Int)]
+generateNewStates board player
+	| player == 'w' 			= generateNewStatesIterator board player (getWhitePos board)
+	| otherwise					= generateNewStatesIterator board player (getBlackPos board)
+
+generateNewStatesIterator :: [String] -> Char -> [(Int, Int)] -> [([String], Int)]
+generateNewStatesIterator board player pos
+	| null pos				= []
+	| otherwise				= 
+		(generateNewStatesHelper board player (head pos)) ++ (generateNewStatesIterator board player (tail pos))
+	
+generateNewStatesHelper :: [String] -> Char -> (Int,Int) -> [([String], Int)]
+generateNewStatesHelper board player pos 
+-- TODO add jumping
+	| player == 'w'				= [(moveBL board player pos, evaluateBoard (moveBL board player pos) player)] ++ 
+								  [(moveBR board player pos, evaluateBoard (moveBR board player pos) player)]
+	| otherwise					= [(moveUL board player pos, evaluateBoard (moveUL board player pos) player)] ++ 
+								  [(moveUR board player pos, evaluateBoard (moveUR board player pos) player)]
 
 
 -- heuristics
@@ -168,6 +193,8 @@ checkMoveBL board piece
 	| (pieceIsTopHalf board piece) && 
 	  (fst piece) == 0
 											= False
+	| (pieceIsBottomHalf board piece) && 
+	  ((snd piece) == ((length board) - 1))	= False
 	| (pieceIsTopHalf board piece) && 
 	  ((board !! ((snd piece) + 1)) !! ((fst piece) - 1) == '-')
 											= True
@@ -182,6 +209,8 @@ checkMoveBR board piece
 	| (pieceIsTopHalf board piece) && 
 	  (fst piece) == ((length (board !! snd piece)) - 1)
 											= False
+	| (pieceIsBottomHalf board piece) && 
+	  ((snd piece) == ((length board) - 1))	= False
 	| (pieceIsTopHalf board piece) && 
 	  ((board !! ((snd piece) + 1)) !! (fst piece) == '-')
 											= True
@@ -197,6 +226,9 @@ checkMoveUL board piece
 	  (fst piece) == 0
 											= False
 	| (pieceIsTopHalf board piece) && 
+	  ((snd piece) == 0)
+											= False
+	| (pieceIsTopHalf board piece) && 
 	  ((board !! ((snd piece) - 1)) !! (fst piece) == '-')
 											= True
 	| (pieceIsBottomHalf board piece) && 
@@ -209,6 +241,9 @@ checkMoveUR :: [String] -> (Int, Int) -> Bool
 checkMoveUR board piece
 	| (pieceIsBottomHalf board piece) && 
 	  (fst piece) == ((length (board !! snd piece)) - 1)
+											= False
+	| (pieceIsTopHalf board piece) && 
+	  ((snd piece) == 0)					
 											= False
 	| (pieceIsTopHalf board piece) && 
 	  ((board !! ((snd piece) - 1)) !! ((fst piece) + 1) == '-')
