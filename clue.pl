@@ -4,13 +4,15 @@
  * Chin-Tsai Tsai  42698100
  * Wesley Tsai     44396109
  */
- 
+
+
 /*
  * Notes
  */
  
 /* documentation on the works */
 /* easy to use interface */
+
 
 /*
  * Set-Up
@@ -22,9 +24,9 @@
 :- dynamic innocentperson/1.
 :- dynamic suggestions/1.
 
-
 /* Order of Play (whose turn next) - idk why we need this */
-
+% use for guessing their cards
+% use for estimating how close they are to winning
 
 /* initialize game */
 % number of players
@@ -32,29 +34,29 @@
 setup(PlayerNum, COH) :- assert(playernum(PlayerNum)), innocent(COH).
 
 % initialize game components
-validateroom("kitchen").
-validateroom("patio").
-validateroom("spa").
-validateroom("theatre").
-validateroom("living room").
-validateroom("observatory").
-validateroom("hall").
-validateroom("guest house").
-validateroom("dining room").
+validateroom('kitchen').
+validateroom('patio').
+validateroom('spa').
+validateroom('theatre').
+validateroom('living room').
+validateroom('observatory').
+validateroom('hall').
+validateroom('guest house').
+validateroom('dining room').
 
-validateweapon("knife").
-validateweapon("candlestick").
-validateweapon("pistol").
-validateweapon("rope").
-validateweapon("bat").
-validateweapon("ax").
+validateweapon('knife').
+validateweapon('candlestick').
+validateweapon('pistol').
+validateweapon('rope').
+validateweapon('bat').
+validateweapon('ax').
 
-validateperson("colonel mustard").
-validateperson("miss scarlet").
-validateperson("professor plum").
-validateperson("mr. green").
-validateperson("mrs. white").
-validateperson("mrs. peacock").
+validateperson('colonel mustard').
+validateperson('miss scarlet').
+validateperson('professor plum').
+validateperson('mr. green').
+validateperson('mrs. white').
+validateperson('mrs. peacock').
 
 
 /*
@@ -91,6 +93,11 @@ seeinnocent(A) :- innocentweapon(A).
 seeinnocent(A) :- innocentperson(A).
 
 /* Make Accusations */
+accusations(ROOM, WEAPON, PERSON) :- 
+	validateroom(ROOM), \+innocentroom(ROOM),
+	validateweapon(WEAPON), \+innocentweapon(WEAPON),
+	validateperson(PERSON), \+innocentperson(PERSON).
+
 
 
 /*
@@ -106,8 +113,9 @@ seeinnocent(A) :- innocentperson(A).
 /* Suggest Card to Show */
 % show already showed card to same player
 
+
 /*
- * Intermediate GamePlay
+ * Advanced GamePlay
  */
 
 /* Assess How Close Others are to Winning */
