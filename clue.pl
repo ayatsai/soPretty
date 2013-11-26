@@ -23,6 +23,7 @@
 :- dynamic innocentweapon/1.
 :- dynamic innocentperson/1.
 :- dynamic suggestions/1.
+:- dynamic suggestionsbyothers/1.
 
 /* Order of Play (whose turn next) - idk why we need this */
 % use for guessing their cards
@@ -105,7 +106,16 @@ accusations(ROOM, WEAPON, PERSON) :-
  */
 
 /* Suggestions Inferred by Other Players */
-% modify heuristics of each
+% should modify heuristics (based on occurrence?)
+% restrict usage
+suggestbyothers(ROOM, WEAPON, PERSON) :- 
+	validateroom(ROOM), 
+	validateweapon(WEAPON), 
+	validateperson(PERSON), 
+	assert(suggestionsbyothers(ROOM, WEAPON, PERSON)).
+
+% output all suggestions of check if already suggested
+checksuggestionbyothers(ROOM, WEAPON, PERSON) :- suggestionsbyothers(ROOM, WEAPON, PERSON).
 
 /* Suggest Next Suggestion */
 % based on location?
