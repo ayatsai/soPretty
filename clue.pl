@@ -17,6 +17,7 @@
 :- dynamic innocentroom/1.
 :- dynamic innocentweapon/1.
 :- dynamic innocentperson/1.
+:- dynamic suggestions/1.
 
 
 % Order of Play (whose turn next) - idk why we need this
@@ -25,12 +26,6 @@
 % number of players
 % Cards On Hand
 setup(PlayerNum, COH) :- assert(playernum(PlayerNum)), innocent(COH).
-
-% will add all rooms, weapons, persons if called with no input
-% should restrict usage
-innocent(NG) :- validateroom(NG), assert(innocentroom(NG)).
-innocent(NG) :- validateweapon(NG), assert(innocentweapon(NG)).
-innocent(NG) :- validateperson(NG), assert(innocentperson(NG)).
 
 % initialize game components
 validateroom("kitchen").
@@ -63,7 +58,21 @@ validateperson("mrs. peacock").
  */
 
 % Track Suggestions
+%	- restrict usage
+suggest(ROOM, WEAPON, PERSON) :- 
+	validateroom(ROOM), 
+	validateweapon(WEAPON), 
+	validateperson(PERSON), 
+	assert(suggestions(ROOM, WEAPON, PERSON)).
+checksuggestion(ROOM, WEAPON, PERSON) :- suggestions(ROOM, WEAPON, PERSON).
+
 % Record Learned Data
+% Record innocent objects
+% 	- restrict usage
+innocent(NG) :- validateroom(NG), assert(innocentroom(NG)).
+innocent(NG) :- validateweapon(NG), assert(innocentweapon(NG)).
+innocent(NG) :- validateperson(NG), assert(innocentperson(NG)).
+
 % Make Accusations
 
 % See Database Contents
