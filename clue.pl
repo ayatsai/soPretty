@@ -19,20 +19,34 @@
  */
 
 /* dynamic function initialize */
+:- dynamic playernum/1.
 :- dynamic innocentroom/1.
 :- dynamic innocentweapon/1.
 :- dynamic innocentperson/1.
+:- dynamic owncards/1.
 :- dynamic suggestions/3.
 :- dynamic suggestionsbyothers/4.
 
-/* Order of Play (whose turn next) - idk why we need this */
-% use for guessing their cards
-% use for estimating how close they are to winning
 
 /* initialize game */
 % number of players
 % Cards On Hand
-setup(PlayerNum, COH) :- assert(playernum(PlayerNum)), innocent(COH).
+setup(PlayerNum, COH) :- 
+	assert(playernum(PlayerNum)), 
+	addowncardsiterator(COH),
+	innocentiterator(COH).
+
+/* Order of Play (whose turn next) - idk why we need this */
+% input list of players in playing order
+% with last player first in list
+% ?? use for guessing their cards + estimating how close they are to winning
+addplayers(P) :- playernum(PN), addplayershelper(P, PN).
+addplayershelper([H|T], PN) :- 
+	addplayershelper(T, PN1),
+	PN is PN1 + 1,
+	assert(player(H, PN)).
+addplayershelper([], 0).
+getplayer(P, I) :- player(P, I).
 
 % initialize game components
 validateroom('kitchen').
@@ -86,11 +100,23 @@ checksuggestion(ROOM, WEAPON, PERSON) :-
 
 /* Record Learned Data */
 
+% Record own cards
+% restrict usage
+addowncardsiterator([H|T]) :- addowncards(H), addowncardsiterator(T).
+addowncardsiterator([]).
+addowncards(NG) :- validateroom(NG), assert(owncards(NG)).
+addowncards(NG) :- validateweapon(NG), assert(owncards(NG)).
+addowncards(NG) :- validateperson(NG), assert(owncards(NG)).
+addowncards([]).
+
 % Record innocent objects
 % restrict usage
+innocentiterator([H|T]) :- innocent(H), innocentiterator(T).
+innocentiterator([]).
 innocent(NG) :- validateroom(NG), assert(innocentroom(NG)).
 innocent(NG) :- validateweapon(NG), assert(innocentweapon(NG)).
 innocent(NG) :- validateperson(NG), assert(innocentperson(NG)).
+innocent([]).
 
 % output known innocent objects
 seeinnocent(A) :- innocentroom(A).
@@ -132,6 +158,8 @@ getunprovensuggestionsbyothers(ROOM, WEAPON, PERSON) :-
 % based on location?
 
 /* Suggest Card to Show */
+% track shown cards
+
 % show already showed card to same player
 
 
