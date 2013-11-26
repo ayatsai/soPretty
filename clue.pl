@@ -22,8 +22,8 @@
 :- dynamic innocentroom/1.
 :- dynamic innocentweapon/1.
 :- dynamic innocentperson/1.
-:- dynamic suggestions/1.
-:- dynamic suggestionsbyothers/1.
+:- dynamic suggestions/3.
+:- dynamic suggestionsbyothers/4.
 
 /* Order of Play (whose turn next) - idk why we need this */
 % use for guessing their cards
@@ -59,6 +59,9 @@ validateperson('mr. green').
 validateperson('mrs. white').
 validateperson('mrs. peacock').
 
+validateboolean(1).
+validateboolean(0).
+
 
 /*
  * Minimal GamePlay
@@ -78,7 +81,8 @@ suggest(ROOM, WEAPON, PERSON) :-
 	assert(suggestions(ROOM, WEAPON, PERSON)).
 
 % output all suggestions of check if already suggested
-checksuggestion(ROOM, WEAPON, PERSON) :- suggestions(ROOM, WEAPON, PERSON).
+checksuggestion(ROOM, WEAPON, PERSON) :- 
+	suggestions(ROOM, WEAPON, PERSON).
 
 /* Record Learned Data */
 
@@ -106,16 +110,23 @@ accusations(ROOM, WEAPON, PERSON) :-
  */
 
 /* Suggestions Inferred by Other Players */
+% refute - (1) is refuted, (0) is undeterred
 % should modify heuristics (based on occurrence?)
 % restrict usage
-suggestbyothers(ROOM, WEAPON, PERSON) :- 
+suggestbyothers(ROOM, WEAPON, PERSON, REFUTE) :- 
 	validateroom(ROOM), 
 	validateweapon(WEAPON), 
-	validateperson(PERSON), 
-	assert(suggestionsbyothers(ROOM, WEAPON, PERSON)).
+	validateperson(PERSON),
+	validateboolean(REFUTE),
+	assert(suggestionsbyothers(ROOM, WEAPON, PERSON, REFUTE)).
 
 % output all suggestions of check if already suggested
-checksuggestionbyothers(ROOM, WEAPON, PERSON) :- suggestionsbyothers(ROOM, WEAPON, PERSON).
+checksuggestionsbyothers(ROOM, WEAPON, PERSON, REFUTE) :- 
+	suggestionsbyothers(ROOM, WEAPON, PERSON, REFUTE).
+getfalsesuggestionsbyothers(ROOM, WEAPON, PERSON) :-
+	suggestionsbyothers(ROOM, WEAPON, PERSON, 1).
+getunprovensuggestionsbyothers(ROOM, WEAPON, PERSON) :-
+	suggestionsbyothers(ROOM, WEAPON, PERSON, 0).
 
 /* Suggest Next Suggestion */
 % based on location?
