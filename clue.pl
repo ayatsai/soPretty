@@ -116,16 +116,18 @@ checkState(X) :- X =:= 0, myTurn, nextPlayer(X), playGame.
 checkState(X) :- X =\= 0, oppGetSuggestion, nextPlayer(X), playGame.
 % get suggestion made by player if any
 oppGetSuggestion :- 
-	write('Did Player '),
+	write('Player '),
 	currentPlayer(Player),
         write(Player),
-	write(' make a suggestion? (input card name until done; status; lose)'), 
-	nl, 
+	println('\'s turn'),
+	println('Did he/she make a suggestion? (3 card names; no; status; lose)'), 
 	read(X),
+	nl,
 	oppGetSuggestionCheck(X).
 % check if player suggested
 oppGetSuggestionCheck(lose) :- lose.
 oppGetSuggestionCheck(status) :- status, oppGetSuggestion.
+oppGetSuggestionCheck(no).
 oppGetSuggestionCheck(done).
 oppGetSuggestionCheck(X) :- oppRecordSuggestionLoop(X, 3).
 % record the three objects suggested
@@ -138,7 +140,6 @@ oppGetShownCard :-
 	read(X),
 	oppRecordShownCard(X).
 
-oppRecordShownCard(done).
 oppRecordShownCard(no).
 oppRecordShownCard(X) :- card(X), addShownCard(X).
 oppRecordShownCard(_) :- read(Y), oppRecordShownCard(Y).
@@ -179,7 +180,7 @@ myTurn :- println('Your Turn'), myClosestRoom.
 % Ask what room is closest and check whether it's already known
 myClosestRoom :- println('What is the closest room to you? (status)'), read(X), nl, myCheckRoomUnknown(X). 
 myCheckRoomUnknown(status) :- printAllCards, myClosestRoom.
-myCheckRoomUnknown(X) :- unknownCard(X, room, _), println('That room has not been confirm, check it out!'), retractall(myClosestRoomIs(X)), assert(myClosestRoomIs(X)), !, myInRoom.
+myCheckRoomUnknown(X) :- unknownCard(X, room, _), println('That room has not been confirmed. Go to it!'), retractall(myClosestRoomIs(X)), assert(myClosestRoomIs(X)), !, myInRoom.
 myCheckRoomUnknown(X) :- knownCard(X,room), println('You have already been to that room, enter the next closest.'), myClosestRoom. 
 myCheckRoomUnknown(_) :- println('Invalid Input. Try Again.'), myClosestRoom. 
 
