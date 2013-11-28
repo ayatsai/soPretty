@@ -29,7 +29,8 @@
 :- dynamic unknownCard/3.
 % room player is closest to and should check.
 :- dynamic myClosestRoomIs/1.
-
+% list of shown cards to other players
+:- dynamic shownCard/2.
 
 clue :- setup, !, playGame.
 
@@ -46,7 +47,7 @@ getStartingCards :- println('What cards are in your hand? Enter done. when you a
 % recorded all cares
 getStartingCardsLoop(done).
 % print the status of all cards
-getStartingCardsLoop(status) :- printAllCards.
+getStartingCardsLoop(status) :- printAllCards, read(Y), getStartingCardsLoop(Y).
 % valid card, record and ask for more 
 getStartingCardsLoop(X) :- card(X), addKnownCard(X), read(Y), getStartingCardsLoop(Y).
 % invalid card, do nothing and ask for more
@@ -66,12 +67,13 @@ getStartingPlayerTurnLoop(X) :-
 getStartingPlayerTurnLoop(X) :- 
 	X < 0, 
 	getStartingPlayerTurn.
-% valide player index, record
+% valid player index, record
 getStartingPlayerTurnLoop(X) :- 
 	setPlayerTurn(X).
 
 % delete database
 resetAll :- retractall(knownCard(_,_)), 
+	retractall(unknownCard(_,_,_)),
 	retractall(playernum(_)), 
 	retractall(currentPlayer(_)), 
 	retractall(myClosestRoomIs(_)),
@@ -117,20 +119,36 @@ playGame :- currentPlayer(X), checkState(X), !.
 
 % my turn
 % add playGame call
-checkState(X) :- X is 0, myTurn, nextPlayer(X).
+checkState(X) :- X =:= 0, myTurn, nextPlayer(X), playGame.
 
 % add playGame call
 % other player turn
-checkState(X) :- X =\= 0, oppGetSuggestion, nextPlayer(X).
+checkState(X) :- X =\= 0, oppGetSuggestion, nextPlayer(X), playGame.
 % get suggestion made by player if any
 oppGetSuggestion :- 
 	println('Did opponent make a suggestion?'), 
 	println('Enter done if no suggestions.'),
 	println('Otherwise input each card one by one'),
-	read(X), 
-	oppGetSuggestionLoop1(X, 3).
+	read(X),
+	oppGetSuggestionCheck(X).
+% check if player suggested
+oppGetSuggestionCheck(done).
+oppGetSuggestionCheck(X) :- oppRecordSuggestionLoop(X, 3).
 % record the three objects suggested
-oppGetSuggestionLoop(X, I) :- oppUpdateHeuristics(X), IN is I - 1, oppGetSuggestionLoop(X, IN).
+oppRecordSuggestionLoop(X, I) :- I is 1, incHeuristics(X), oppGetShownCard.
+oppRecordSuggestionLoop(X, I) :- card(X), incHeuristics(X), read(Y), IN is I - 1, oppRecordSuggestionLoop(Y, IN).
+oppRecordSuggestionLoop(_, I) :- read(Y), oppRecordSuggestionLoop(Y, I).
+
+oppGetShownCard :- 
+	println('Did you show a card?'),
+	println('If not, input done.'),
+	println('Else, input card.'),
+	read(X),
+	oppRecordShownCard(X).
+
+oppRecordShownCard(done).
+oppRecordShownCard(X) :- card(X), addShownCard(X).
+oppRecordShownCard(_) :- read(Y), oppRecordShownCard(Y).
 
 /* Game Mechanics */
 
@@ -140,11 +158,20 @@ nextPlayer(X) :- Z is X + 1, setPlayerTurn(Z).
 setPlayerTurn(X) :- retractall(currentPlayer(_)), assert(currentPlayer(X)).
 
 % Record Data Operations
+% track cards shown to me
 addKnownCard(X) :- retract(unknownCard(X, Y, _)), assert(knownCard(X, Y)). 
+% increment heuristics of unknown cards
+incHeuristics(X) :- knownCard(X, _).
+incHeuristics(X) :- 
+	unknownCard(X, Y, H), 
+	retract(unknownCard(X, Y, H)), 
+	HI is H + 1,
+	assert(unknownCard(X, Y, HI)).
+addShownCard(X) :- currentPlayer(P), assert(shownCard(X, P)).
 
 
 /* My Turn Mechanics */
-myTurn :- myClosestRoom.
+myTurn :- println('Your Turn'), myClosestRoom.
 
 % Ask what room is closest and check whether it's already known
 myClosestRoom :- myClosestRoomIs(_), myInRoom.
@@ -177,21 +204,23 @@ printAllCards :- printAllKnownCards, printAllUnknownCards.
 printAllUnknownCards :- printUnknownTitle, printAllUnknownRooms, printAllUnknownWeapons, printAllUnknownPeople.
 printAllKnownCards :- printKnownTitle, printAllKnownRooms, printAllKnownWeapons, printAllKnownPeople.
 
-printAllUnknownRooms :- printRoomsTitle, forall(unknownCard(X, room, _), println(X)), nl.
-printAllUnknownWeapons :- printWeaponsTitle, forall(unknownCard(X, weapon, _), println(X)), nl.
-printAllUnknownPeople :- printPeopleTitle, forall(unknownCard(X, person, _), println(X)), nl.
+printAllUnknownRooms :- printRoomsTitle, forall(unknownCard(X, room, H), printlist([X,H])), nl.
+printAllUnknownWeapons :- printWeaponsTitle, forall(unknownCard(X, weapon, H), printlist([X,H])), nl.
+printAllUnknownPeople :- printPeopleTitle, forall(unknownCard(X, person, H), printlist([X,H])), nl.
 
 printAllKnownRooms :- printRoomsTitle, forall(knownCard(X, room), println(X)), nl.
 printAllKnownWeapons :- printWeaponsTitle, forall(knownCard(X, weapon), println(X)), nl.
 printAllKnownPeople :- printPeopleTitle, forall(knownCard(X, person), println(X)), nl.
 
+printlist([]) :- nl.
+printlist([H|T]) :- write(H), tab(3), printlist(T).
 println(X) :- write(X), nl.
 
-printUnknownTitle :- println('       ***Unknown Cards***').
-printKnownTitle :- println('        ***Known Cards***').
-printRoomsTitle :- println('*=============Rooms===============*'), nl.
-printWeaponsTitle :- println('*============Weapons=============*'), nl.
-printPeopleTitle :- println('*============Suspects=============*'), nl.
+printUnknownTitle :- println('         ***Unknown Cards***').
+printKnownTitle :- println('           ***Known Cards***').
+printRoomsTitle :- println('*==============Rooms==============*'), nl.
+printWeaponsTitle :- println('*=============Weapons=============*'), nl.
+printPeopleTitle :- println('*=============Suspects============*'), nl.
 
 /*
  * Minimal GamePlay
