@@ -26,7 +26,7 @@
 % list of innocent objects
 :- dynamic knownCard/2.
 % list of suspects
-:- dynamic unknownCard/2.
+:- dynamic unknownCard/3.
 
 
 clue :- setup, !, playGame.
@@ -73,34 +73,34 @@ resetAll :- retractall(knownCard(_,_)), retractall(playernum(_)).
 /* Initialize Game Components */
 
 % add all possible cards
-card(X) :- unknownCard(X,_).
+card(X) :- unknownCard(X,_,_).
 card(X) :- knownCard(X,_).
 card(_) :- println('Card does not exist').
 
 % initialize all rooms
-unknownCard(kitchen, room).
-unknownCard(patio, room).
-unknownCard(spa, room).
-unknownCard(theatre, room).
-unknownCard(livingroom, room).
-unknownCard(observatory, room).
-unknownCard(hall, room).
-unknownCard(guesthouse, room).
-unknownCard(diningroom, room).
+unknownCard(kitchen, room, 0).
+unknownCard(patio, room, 0).
+unknownCard(spa, room, 0).
+unknownCard(theatre, room, 0).
+unknownCard(livingroom, room, 0).
+unknownCard(observatory, room, 0).
+unknownCard(hall, room, 0).
+unknownCard(guesthouse, room, 0).
+unknownCard(diningroom, room, 0).
 % initialize all weapons
-unknownCard(knife, weapon).
-unknownCard(candlestick, weapon).
-unknownCard(pistol, weapon).
-unknownCard(rope, weapon).
-unknownCard(bat, weapon).
-unknownCard(axe, weapon).
+unknownCard(knife, weapon, 0).
+unknownCard(candlestick, weapon, 0).
+unknownCard(pistol, weapon, 0).
+unknownCard(rope, weapon, 0).
+unknownCard(bat, weapon, 0).
+unknownCard(axe, weapon, 0).
 % initialize all persons
-unknownCard(mustard, person).
-unknownCard(scarlet, person).
-unknownCard(plum, person).
-unknownCard(green, person).
-unknownCard(white, person).
-unknownCard(peacock, person).
+unknownCard(mustard, person, 0).
+unknownCard(scarlet, person, 0).
+unknownCard(plum, person, 0).
+unknownCard(green, person, 0).
+unknownCard(white, person, 0).
+unknownCard(peacock, person, 0).
 
 
 /* Game Play */
@@ -108,7 +108,7 @@ playGame :- currentPlayer(X), checkState(X), !.
 
 % my turn
 % add playGame call
-checkState(X) :- X is 0, nextPlayer(X).
+checkState(X) :- X is 0, myTurn, nextPlayer(X).
 
 % add playGame call
 % other player turn
@@ -124,17 +124,26 @@ nextPlayer(X) :- Z is X + 1, setPlayerTurn(Z).
 setPlayerTurn(X) :- retractall(currentPlayer(_)), assert(currentPlayer(X)).
 
 % Record Data Operations
-addKnownCard(X) :- retract(unknownCard(X, Y)), assert(knownCard(X, Y)). 
+addKnownCard(X) :- retract(unknownCard(X, Y, _)), assert(knownCard(X, Y)). 
 
+/* My Turn Mechanics */
+myTurn :- myClosestRoom.
+
+% Ask what room is closest and check whether it's already known
+myClosestRoom :- println('What is the closest room to you?'), read(X), myCheckRoomUnknown(X). 
+myCheckRoomUnknown(X) :- unknownCard(X, room, _), println('That room has not been confirm, check it out!'), myInRoom.
+myCheckRoomUnKnown(X) :- knownCard(X, room), println('You have already been to that room, do not go in'), myClosestRoom. 
+
+myInRoom.
 /* Output Database Operations */
 
 printAllCards :- printAllKnownCards, printAllUnknownCards.
 printAllUnknownCards :- printUnknownTitle, printAllUnknownRooms, printAllUnknownWeapons, printAllUnknownPeople.
 printAllKnownCards :- printKnownTitle, printAllKnownRooms, printAllKnownWeapons, printAllKnownPeople.
 
-printAllUnknownRooms :- printRoomsTitle, forall(unknownCard(X, room), println(X)), nl.
-printAllUnknownWeapons :- printWeaponsTitle, forall(unknownCard(X, weapon), println(X)), nl.
-printAllUnknownPeople :- printPeopleTitle, forall(unknownCard(X, person), println(X)), nl.
+printAllUnknownRooms :- printRoomsTitle, forall(unknownCard(X, room, _), println(X)), nl.
+printAllUnknownWeapons :- printWeaponsTitle, forall(unknownCard(X, weapon, _), println(X)), nl.
+printAllUnknownPeople :- printPeopleTitle, forall(unknownCard(X, person, _), println(X)), nl.
 
 printAllKnownRooms :- printRoomsTitle, forall(knownCard(X, room), println(X)), nl.
 printAllKnownWeapons :- printWeaponsTitle, forall(knownCard(X, weapon), println(X)), nl.
@@ -151,6 +160,7 @@ printPeopleTitle :- println('*============Suspects=============*'), nl.
 /*
  * Minimal GamePlay
  */
+
 
 /* Track Suggestions */
 
