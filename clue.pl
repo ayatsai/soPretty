@@ -121,9 +121,16 @@ checkState(X) :- X is 0, myTurn, nextPlayer(X).
 
 % add playGame call
 % other player turn
-checkState(X) :- X =\= 0, myTurn, nextPlayer(X).
-
-
+checkState(X) :- X =\= 0, oppGetSuggestion, nextPlayer(X).
+% get suggestion made by player if any
+oppGetSuggestion :- 
+	println('Did opponent make a suggestion?'), 
+	println('Enter done if no suggestions.'),
+	println('Otherwise input each card one by one'),
+	read(X), 
+	oppGetSuggestionLoop1(X, 3).
+% record the three objects suggested
+oppGetSuggestionLoop(X, I) :- oppUpdateHeuristics(X), IN is I - 1, oppGetSuggestionLoop(X, IN).
 
 /* Game Mechanics */
 
@@ -134,6 +141,7 @@ setPlayerTurn(X) :- retractall(currentPlayer(_)), assert(currentPlayer(X)).
 
 % Record Data Operations
 addKnownCard(X) :- retract(unknownCard(X, Y, _)), assert(knownCard(X, Y)). 
+
 
 /* My Turn Mechanics */
 myTurn :- myClosestRoom.
