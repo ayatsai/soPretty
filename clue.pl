@@ -19,7 +19,10 @@
  */
 
 /* dynamic function initialize */
+:- dynamic knownCard/2.
+:- dynamic unknownCard/2.
 :- dynamic playernum/1.
+:- dynamic currentPlayer/1.
 :- dynamic innocentroom/1.
 :- dynamic innocentweapon/1.
 :- dynamic innocentperson/1.
@@ -27,56 +30,70 @@
 :- dynamic suggestions/3.
 :- dynamic suggestionsbyothers/4.
 
+clue :- setup, !, startGame.
 
 /* initialize game */
 % number of players
 % Cards On Hand
-setup(PlayerNum, COH) :- 
-	assert(playernum(PlayerNum)), 
-	addowncardsiterator(COH),
-	innocentiterator(COH).
+setup :- resetAll, !, getNumPlayers, !, getStartingCards, !, getStartingPlayerTurn.
+getNumPlayers :- println('How many people are playing?'), read(X), assert(playernum(X)).
 
-/* Order of Play (whose turn next) - idk why we need this */
-% input list of players in playing order
-% with last player first in list
-% ?? use for guessing their cards + estimating how close they are to winning
-addplayers(P) :- playernum(PN), addplayershelper(P, PN).
-addplayershelper([H|T], PN) :- 
-	addplayershelper(T, PN1),
-	PN is PN1 + 1,
-	assert(player(H, PN)).
-addplayershelper([], 0).
-getplayer(P, I) :- player(P, I).
+getStartingCards :- println('What cards are in your hand? Enter done. when you are finished.'), read(X), getStartingCardsLoop(X).
+getStartingCardsLoop(done).
+getStartingCardsLoop(X) :- card(X), addKnownCard(X), read(Y), getStartingCardsLoop(Y).
+getStartingCardsLoop(X) :- read(Y), getStartingCardsLoop(Y).
 
+getStartingPlayerTurn :- println('Whos turn is it? (Player 0 is on your left if going clockwise'), read(X), getStartingPlayerTurnLoop(X).
+getStartingPlayerTurnLoop(X) :- playernum(Y), X >= Y, getStartingPlayerTurn.
+getStartingPlayerTurnLoop(X) :- playernum(Y), X < 0, getStartingPlayerTurn.
+getStartingPlayerTurnLoop(X) :- setPlayerTurn(X), println(lol).
+
+resetAll :- retractall(knownCard(_,_)), retractall(playernum(_)).
+
+% Card adding operations
+addKnownCard(X) :- retract(unknownCard(X, Y)), assert(knownCard(X, Y)). 
+setPlayerTurn(X) :- retractall(currentPlayer(_)), assert(currentPlayer(X)).
+
+startGame.
 % initialize game components
-validateroom('kitchen').
-validateroom('patio').
-validateroom('spa').
-validateroom('theatre').
-validateroom('living room').
-validateroom('observatory').
-validateroom('hall').
-validateroom('guest house').
-validateroom('dining room').
+card(X) :- unknownCard(X,_).
+card(X) :- knownCard(X,_).
+card(_) :- println('Card does not exist').
 
-validateweapon('knife').
-validateweapon('candlestick').
-validateweapon('pistol').
-validateweapon('rope').
-validateweapon('bat').
-validateweapon('ax').
+unknownCard(kitchen, room).
+unknownCard(patio, room).
+unknownCard(spa, room).
+unknownCard(theatre, room).
+unknownCard(livingroom, room).
+unknownCard(observatory, room).
+unknownCard(hall, room).
+unknownCard(guesthouse, room).
+unknownCard(diningroom, room).
 
-validateperson('colonel mustard').
-validateperson('miss scarlet').
-validateperson('professor plum').
-validateperson('mr. green').
-validateperson('mrs. white').
-validateperson('mrs. peacock').
+unknownCard(knife, weapon).
+unknownCard(candlestick, weapon).
+unknownCard(pistol, weapon).
+unknownCard(rope, weapon).
+unknownCard(bat, weapon).
+unknownCard(axe, weapon).
 
-validateboolean(1).
-validateboolean(0).
+unknownCard(mustard, person).
+unknownCard(scarlet, person).
+unknownCard(plum, person).
+unknownCard(green, person).
+unknownCard(white, person).
+unknownCard(peacock, person).
 
+unknownboolean(1).
+unknownboolean(0).
 
+printAllCards :- printAllRooms, printSeparator, printAllWeapons, printSeparator, printAllPerson.
+printAllRooms :- forall(unknownCard(X, room), println(X)).
+printAllWeapons :- forall(unknownCard(X, weapon), println(X)).
+printAllPerson :- forall(unknownCard(X, person), println(X)).
+
+println(X) :- write(X), nl.
+printSeparator :- write(================================================), nl.
 /*
  * Minimal GamePlay
  */
@@ -89,9 +106,9 @@ validateboolean(0).
 % make suggestion
 % restrict usage
 suggest(ROOM, WEAPON, PERSON) :- 
-	validateroom(ROOM), 
-	validateweapon(WEAPON), 
-	validateperson(PERSON), 
+	unknownCard(ROOM), 
+	unknownCard(WEAPON), 
+	unknownCard(PERSON), 
 	assert(suggestions(ROOM, WEAPON, PERSON)).
 
 % output all suggestions of check if already suggested
@@ -104,18 +121,18 @@ checksuggestion(ROOM, WEAPON, PERSON) :-
 % restrict usage
 addowncardsiterator([H|T]) :- addowncards(H), addowncardsiterator(T).
 addowncardsiterator([]).
-addowncards(NG) :- validateroom(NG), assert(owncards(NG)).
-addowncards(NG) :- validateweapon(NG), assert(owncards(NG)).
-addowncards(NG) :- validateperson(NG), assert(owncards(NG)).
+addowncards(NG) :- unknownCard(NG), assert(owncards(NG)).
+addowncards(NG) :- unknownCard(NG), assert(owncards(NG)).
+addowncards(NG) :- unknownCard(NG), assert(owncards(NG)).
 addowncards([]).
 
 % Record innocent objects
 % restrict usage
 innocentiterator([H|T]) :- innocent(H), innocentiterator(T).
 innocentiterator([]).
-innocent(NG) :- validateroom(NG), assert(innocentroom(NG)).
-innocent(NG) :- validateweapon(NG), assert(innocentweapon(NG)).
-innocent(NG) :- validateperson(NG), assert(innocentperson(NG)).
+innocent(NG) :- unknownCard(NG), assert(innocentroom(NG)).
+innocent(NG) :- unknownCard(NG), assert(innocentweapon(NG)).
+innocent(NG) :- unknownCard(NG), assert(innocentperson(NG)).
 innocent([]).
 
 % output known innocent objects
@@ -125,9 +142,9 @@ seeinnocent(A) :- innocentperson(A).
 
 /* Make Accusations */
 accusations(ROOM, WEAPON, PERSON) :- 
-	validateroom(ROOM), \+innocentroom(ROOM),
-	validateweapon(WEAPON), \+innocentweapon(WEAPON),
-	validateperson(PERSON), \+innocentperson(PERSON).
+	unknownCard(ROOM), \+innocentroom(ROOM),
+	unknownCard(WEAPON), \+innocentweapon(WEAPON),
+	unknownCard(PERSON), \+innocentperson(PERSON).
 
 
 
@@ -140,10 +157,10 @@ accusations(ROOM, WEAPON, PERSON) :-
 % should modify heuristics (based on occurrence?)
 % restrict usage
 suggestbyothers(ROOM, WEAPON, PERSON, REFUTE) :- 
-	validateroom(ROOM), 
-	validateweapon(WEAPON), 
-	validateperson(PERSON),
-	validateboolean(REFUTE),
+	unknownCard(ROOM), 
+	unknownCard(WEAPON), 
+	unknownCard(PERSON),
+	unknownboolean(REFUTE),
 	assert(suggestionsbyothers(ROOM, WEAPON, PERSON, REFUTE)).
 
 % output all suggestions of check if already suggested
