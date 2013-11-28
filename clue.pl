@@ -53,7 +53,7 @@ getStartingPlayerTurn :-
 % invalid player index input
 getStartingPlayerTurnLoop(X) :- 
 	playernum(Y), 
-	X > Y, 
+	X > Y - 1, 
 	getStartingPlayerTurn.
 % invalid player index input
 getStartingPlayerTurnLoop(X) :- 
