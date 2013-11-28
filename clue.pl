@@ -224,8 +224,8 @@ printlist([]) :- nl.
 printlist([H|T]) :- write(H), tab(3), printlist(T).
 println(X) :- write(X), nl.
 
-printUnknownTitle :- println('         ***Unknown Cards***').
-printKnownTitle :- println('           ***Known Cards***').
+printUnknownTitle :- println('       *** Unknown Cards ***').
+printKnownTitle :- println('        *** Known Cards ***').
 printRoomsTitle :- println('*==============Rooms==============*'), nl.
 printWeaponsTitle :- println('*=============Weapons=============*'), nl.
 printPeopleTitle :- println('*=============Suspects============*'), nl.
