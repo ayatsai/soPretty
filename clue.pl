@@ -17,8 +17,12 @@
 :- dynamic unknownCard/3.
 % room player is closest to and should check.
 :- dynamic myClosestRoomIs/1.
+% my cards
+:- dynamic myCards/1.
 % list of shown cards to other players
-:- dynamic shownCard/2.
+:- dynamic oppShownCard/2.
+% list of possible card to show
+:- dyamic oppToShow/2.
 
 clue :- setup, !, playGame.
 
@@ -37,7 +41,7 @@ getStartingCardsLoop(done).
 % print the status of all cards
 getStartingCardsLoop(status) :- printAllCards, read(Y), getStartingCardsLoop(Y).
 % valid card, record and ask for more 
-getStartingCardsLoop(X) :- card(X), addKnownCard(X), read(Y), getStartingCardsLoop(Y).
+getStartingCardsLoop(X) :- card(X), addKnownCard(X),assert(myCards(X)), read(Y), getStartingCardsLoop(Y).
 % invalid card, do nothing and ask for more
 getStartingCardsLoop(_) :- read(Y), getStartingCardsLoop(Y).
 
@@ -111,36 +115,8 @@ checkState(X) :- X =:= 0, myTurn, nextPlayer(X), playGame.
 
 % add playGame call
 % other player turn
-checkState(X) :- X =\= 0, oppGetSuggestion, nextPlayer(X), playGame.
-% get suggestion made by player if any
-oppGetSuggestion :- 
-	write('Did player '),
-	currentPlayer(Player),
-        write(Player),
-	write('make a suggestion? (input card name until "done."; status; lose)'), 
-	nl, 
-	read(X),
-	oppGetSuggestionCheck(X).
-% check if player suggested
-oppGetSuggestionCheck(lose) :- lose.
-oppGetSuggestionCheck(status) :- status.
-oppGetSuggestionCheck(done).
-oppGetSuggestionCheck(X) :- oppRecordSuggestionLoop(X, 3).
-% record the three objects suggested
-oppRecordSuggestionLoop(X, I) :- I is 1, incHeuristics(X), oppGetShownCard.
-oppRecordSuggestionLoop(X, I) :- card(X), incHeuristics(X), read(Y), IN is I - 1, oppRecordSuggestionLoop(Y, IN).
-oppRecordSuggestionLoop(_, I) :- read(Y), oppRecordSuggestionLoop(Y, I).
+checkState(X) :- X =\= 0, oppTurn, nextPlayer(X), playGame.
 
-oppGetShownCard :- 
-	println('Did you show a card?'),
-	println('If not, input done.'),
-	println('Else, input card.'),
-	read(X),
-	oppRecordShownCard(X).
-
-oppRecordShownCard(done).
-oppRecordShownCard(X) :- card(X), addShownCard(X).
-oppRecordShownCard(_) :- read(Y), oppRecordShownCard(Y).
 
 /* Game Mechanics */
 
@@ -160,7 +136,7 @@ incHeuristics(X) :-
 	retract(unknownCard(X, Y, H)), 
 	HI is H + 1,
 	assert(unknownCard(X, Y, HI)).
-addShownCard(X) :- currentPlayer(P), assert(shownCard(X, P)).
+addShownCard(X) :- currentPlayer(P), assert(oppShownCard(X, P)).
 
 % Win/Loss
 win :- println('Looks like you won. Congratulations!'), break.
@@ -195,6 +171,52 @@ myAddShownCard(none) :- win.
 myAddShownCard(win) :- win.
 myAddShownCard(X) :- unknownCard(X,_,_), addKnownCard(X).
 myAddShownCard :- println('Not a valid input. Try Again.'), myQueryShownCard.
+
+/* Opponent Turn Mechanics */
+
+oppTurn :- oppGetSuggestion.
+% get suggestion made by player if any
+oppGetSuggestion :- 
+	write('Did player '),
+	currentPlayer(Player),
+        write(Player),
+	write(' make a suggestion? (n for no; input card name; status; lose)'), 
+	nl, 
+	read(X),
+	oppGetSuggestionCheck(X).
+% check if player suggested
+oppGetSuggestionCheck(lose) :- lose.
+oppGetSuggestionCheck(status) :- status, oppGetSuggestion.
+oppGetSuggestionCheck(n).
+oppGetSuggestionCheck(X) :- oppRecordSuggestionLoop(X, 3).
+% record the three objects suggested
+oppRecordSuggestionLoop(X, I) :- I is 1, incHeuristics(X), oppTrackSuggestion(X), oppGetShownCard.
+oppRecordSuggestionLoop(X, I) :- card(X), incHeuristics(X), oppTrackSuggestion(X), read(Y), IN is I - 1, oppRecordSuggestionLoop(Y, IN).
+oppRecordSuggestionLoop(_, I) :- read(Y), oppRecordSuggestionLoop(Y, I).
+
+oppGetShownCard :- 
+	println('Do you need to show a card? (y/n)'),
+	read(X),
+	oppReturnShownCard(X).
+
+oppReturnShownCard(y) :- oppGetCardToShow(X), print('Show this card: '), println(X), retractall(oppToShow(_,_)), addShownCard(X).
+oppReturnShownCard(y) :- println('Cannot refute'), retractall(oppToShow(_,_)).
+oppReturnShownCard(n) :- retractall(oppToShow(_)).
+
+% change card to show
+% already shown card to this opponent
+oppTrackSuggestion(X) :- currentPlayer(Y), oppShownCard(X, Y), assert(oppToShow(X, 3)).
+% card already shown to someone
+oppTrackSuggestion(X) :- oppShownCard(X, _), assert(oppToShow(X, 2)).
+% have card but shown no one
+oppTrackSuggestion(X) :- myCards(X), assert(oppToShow(X, 1)).
+% not a match
+oppTrackSuggestion(_).
+
+oppGetCardToShow(X) :- oppToShow(X, 3).
+oppGetCardToShow(X) :- oppToShow(X, 2).
+oppGetCardToShow(X) :- oppToShow(X, 1).
+
 
 /* Output Database Operations */
 status :- printAllCards.
