@@ -32,12 +32,12 @@ clue :- setup, !, playGame.
 % set cards on hand
 % set starting player
 setup :- resetAll, !, getNumPlayers, !, getStartingCards, !, getStartingPlayerTurn.
-getNumPlayers :- println('How many people are playing?'), read(X), assert(playernum(X)).
+getNumPlayers :- println('How many people are playing?'), read(X), nl, assert(playernum(X)).
 
 % get cards on hand
-getStartingCards :- println('What cards are in your hand? Enter done. when you are finished. (status)'), read(X), getStartingCardsLoop(X).
+getStartingCards :- println('What cards are in your hand? Enter done. when you are finished. (done; status)'), read(X), getStartingCardsLoop(X).
 % recorded all cares
-getStartingCardsLoop(done).
+getStartingCardsLoop(done) :- nl.
 % print the status of all cards
 getStartingCardsLoop(status) :- printAllCards, read(Y), getStartingCardsLoop(Y).
 % valid card, record and ask for more 
@@ -61,7 +61,7 @@ getStartingPlayerTurnLoop(X) :-
 	getStartingPlayerTurn.
 % valid player index, record
 getStartingPlayerTurnLoop(X) :- 
-	setPlayerTurn(X).
+	nl, setPlayerTurn(X).
 
 % delete database
 resetAll :- retractall(knownCard(_,_)), 
@@ -106,6 +106,8 @@ assertAllCards :-
 	assert(unknownCard(peacock, person, 0)).
 
 
+
+
 /* Game Play */
 playGame :- currentPlayer(X), checkState(X), !.
 
@@ -138,8 +140,13 @@ incHeuristics(X) :-
 	assert(unknownCard(X, Y, HI)).
 addShownCard(X) :- currentPlayer(P), assert(oppShownCard(X, P)).
 
+% find card with lowest huristic of Type
+lowestHeuristic(X, Type) :- 
+	unknownCard(X,Type,H1),
+	\+ (unknownCard(Y,Type,H2), Y \= X, H2 < H1).
+
 % Win/Loss
-win :- println('Looks like you won. Congratulations!'), break.
+win :- println('Looks like you\'ve won. Congratulations!'), break.
 lose :- println('You lost? Better luck next time!'), break.
 
 
@@ -147,10 +154,9 @@ lose :- println('You lost? Better luck next time!'), break.
 myTurn :- println('Your Turn'), myClosestRoom.
 
 % Ask what room is closest and check whether it's already known
-myClosestRoom :- myClosestRoomIs(_), myInRoom.
 myClosestRoom :- println('What is the closest room to you? (status)'), read(X), nl, myCheckRoomUnknown(X). 
 myCheckRoomUnknown(status) :- printAllCards, myClosestRoom.
-myCheckRoomUnknown(X) :- unknownCard(X, room, _), println('That room has not been confirm, check it out!'), retractall(myClosestRoomIs(X)), assert(myClosestRoomIs(X)), !, myInRoom.
+myCheckRoomUnknown(X) :- unknownCard(X, room, _), println('That room has not been confirmed. Go to it!'), retractall(myClosestRoomIs(X)), assert(myClosestRoomIs(X)), !, myInRoom.
 myCheckRoomUnknown(X) :- knownCard(X,room), println('You have already been to that room, enter the next closest.'), myClosestRoom. 
 myCheckRoomUnknown(_) :- println('Invalid Input. Try Again.'), myClosestRoom. 
 
@@ -160,9 +166,13 @@ myInRoomResponse(y) :- mySuggestCards.
 myInRoomResponse(n) :- println('Go there.'), nl.
 myInRoomResponse(_) :- println('Not a valid input.'), myInRoom.
 
-% TODO: use the damn heuristics in unknownCard
 % Give card suggestions, ask which card is shown.
-mySuggestCards :- println('Suggest these cards: '), myClosestRoomIs(Room), println(Room), unknownCard(X, weapon, _), println(X), unknownCard(Y, person, _), println(Y), retractall(myClosestRoomIs(_)), nl, myQueryShownCard.
+% Uses the card with the lowest heuristic as suggestion (least asked card)
+mySuggestCards :- println('Suggest these cards: '), 
+	myClosestRoomIs(Room), println(Room), 
+	lowestHeuristic(X, weapon), unknownCard(X, weapon, _), println(X), 
+	lowestHeuristic(Y, person), unknownCard(Y, person, _), println(Y), 
+	retractall(myClosestRoomIs(_)), nl, myQueryShownCard.
 
 % Add shown card to the database
 myQueryShownCard :- println('Which card were you shown? (status; none; win)'), read(X), nl, myAddShownCard(X).
@@ -236,8 +246,8 @@ printlist([]) :- nl.
 printlist([H|T]) :- write(H), tab(3), printlist(T).
 println(X) :- write(X), nl.
 
-printUnknownTitle :- println('         ***Unknown Cards***').
-printKnownTitle :- println('           ***Known Cards***').
+printUnknownTitle :- println('       *** Unknown Cards ***').
+printKnownTitle :- println('        *** Known Cards ***').
 printRoomsTitle :- println('*==============Rooms==============*'), nl.
 printWeaponsTitle :- println('*=============Weapons=============*'), nl.
 printPeopleTitle :- println('*=============Suspects============*'), nl.
