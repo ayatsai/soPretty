@@ -170,7 +170,7 @@ lowestHeuristic(X, Type) :-
 	\+ (unknownCard(Y,Type,H2), Y \= X, H2 < H1).
 
 % Win/Loss
-win :- println('Looks like you won. Congratulations!'), break.
+win :- println('Looks like you\'ve won. Congratulations!'), break.
 lose :- println('You lost? Better luck next time!'), break.
 
 
@@ -190,8 +190,8 @@ myInRoomResponse(y) :- mySuggestCards.
 myInRoomResponse(n) :- println('Go there.'), nl.
 myInRoomResponse(_) :- println('Not a valid input.'), myInRoom.
 
-% TODO: use the damn heuristics in unknownCard
 % Give card suggestions, ask which card is shown.
+% Uses the card with the lowest heuristic as suggestion (least asked card)
 mySuggestCards :- println('Suggest these cards: '), 
 	myClosestRoomIs(Room), println(Room), 
 	lowestHeuristic(X, weapon), unknownCard(X, weapon, _), println(X), 
