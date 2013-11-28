@@ -40,12 +40,12 @@ clue :- setup, !, playGame.
 % set cards on hand
 % set starting player
 setup :- resetAll, !, getNumPlayers, !, getStartingCards, !, getStartingPlayerTurn.
-getNumPlayers :- println('How many people are playing?'), read(X), assert(playernum(X)).
+getNumPlayers :- println('How many people are playing?'), read(X), nl, assert(playernum(X)).
 
 % get cards on hand
-getStartingCards :- println('What cards are in your hand? Enter done. when you are finished. (status)'), read(X), getStartingCardsLoop(X).
+getStartingCards :- println('What cards are in your hand? Enter done. when you are finished. (done; status)'), read(X), getStartingCardsLoop(X).
 % recorded all cares
-getStartingCardsLoop(done).
+getStartingCardsLoop(done) :- nl.
 % print the status of all cards
 getStartingCardsLoop(status) :- printAllCards, read(Y), getStartingCardsLoop(Y).
 % valid card, record and ask for more 
@@ -69,7 +69,7 @@ getStartingPlayerTurnLoop(X) :-
 	getStartingPlayerTurn.
 % valid player index, record
 getStartingPlayerTurnLoop(X) :- 
-	setPlayerTurn(X).
+	nl, setPlayerTurn(X).
 
 % delete database
 resetAll :- retractall(knownCard(_,_)), 
@@ -114,6 +114,8 @@ assertAllCards :-
 	assert(unknownCard(peacock, person, 0)).
 
 
+
+
 /* Game Play */
 playGame :- currentPlayer(X), checkState(X), !.
 
@@ -126,31 +128,30 @@ checkState(X) :- X =:= 0, myTurn, nextPlayer(X), playGame.
 checkState(X) :- X =\= 0, oppGetSuggestion, nextPlayer(X), playGame.
 % get suggestion made by player if any
 oppGetSuggestion :- 
-	write('Did player '),
+	write('Did Player '),
 	currentPlayer(Player),
         write(Player),
-	write('make a suggestion? (input card name until "done."; status; lose)'), 
+	write(' make a suggestion? (input card name until done; status; lose)'), 
 	nl, 
 	read(X),
 	oppGetSuggestionCheck(X).
 % check if player suggested
 oppGetSuggestionCheck(lose) :- lose.
-oppGetSuggestionCheck(status) :- status.
+oppGetSuggestionCheck(status) :- status, oppGetSuggestion.
 oppGetSuggestionCheck(done).
 oppGetSuggestionCheck(X) :- oppRecordSuggestionLoop(X, 3).
 % record the three objects suggested
-oppRecordSuggestionLoop(X, I) :- I is 1, incHeuristics(X), oppGetShownCard.
+oppRecordSuggestionLoop(X, I) :- I is 1, incHeuristics(X), oppGetShownCard, nl.
 oppRecordSuggestionLoop(X, I) :- card(X), incHeuristics(X), read(Y), IN is I - 1, oppRecordSuggestionLoop(Y, IN).
 oppRecordSuggestionLoop(_, I) :- read(Y), oppRecordSuggestionLoop(Y, I).
 
 oppGetShownCard :- 
-	println('Did you show a card?'),
-	println('If not, input done.'),
-	println('Else, input card.'),
+	println('Did you show a card? (card_name; no)'),
 	read(X),
 	oppRecordShownCard(X).
 
 oppRecordShownCard(done).
+oppRecordShownCard(no).
 oppRecordShownCard(X) :- card(X), addShownCard(X).
 oppRecordShownCard(_) :- read(Y), oppRecordShownCard(Y).
 
@@ -173,6 +174,11 @@ incHeuristics(X) :-
 	assert(unknownCard(X, Y, HI)).
 addShownCard(X) :- currentPlayer(P), assert(shownCard(X, P)).
 
+% find card with lowest huristic of Type
+lowestHeuristic(X, Type) :- 
+	unknownCard(X,Type,H1),
+	\+ (unknownCard(Y,Type,H2), Y \= X, H2 < H1).
+
 % Win/Loss
 win :- println('Looks like you won. Congratulations!'), break.
 lose :- println('You lost? Better luck next time!'), break.
@@ -182,7 +188,6 @@ lose :- println('You lost? Better luck next time!'), break.
 myTurn :- println('Your Turn'), myClosestRoom.
 
 % Ask what room is closest and check whether it's already known
-myClosestRoom :- myClosestRoomIs(_), myInRoom.
 myClosestRoom :- println('What is the closest room to you? (status)'), read(X), nl, myCheckRoomUnknown(X). 
 myCheckRoomUnknown(status) :- printAllCards, myClosestRoom.
 myCheckRoomUnknown(X) :- unknownCard(X, room, _), println('That room has not been confirm, check it out!'), retractall(myClosestRoomIs(X)), assert(myClosestRoomIs(X)), !, myInRoom.
@@ -197,7 +202,11 @@ myInRoomResponse(_) :- println('Not a valid input.'), myInRoom.
 
 % TODO: use the damn heuristics in unknownCard
 % Give card suggestions, ask which card is shown.
-mySuggestCards :- println('Suggest these cards: '), myClosestRoomIs(Room), println(Room), unknownCard(X, weapon, _), println(X), unknownCard(Y, person, _), println(Y), retractall(myClosestRoomIs(_)), nl, myQueryShownCard.
+mySuggestCards :- println('Suggest these cards: '), 
+	myClosestRoomIs(Room), println(Room), 
+	lowestHeuristic(X, weapon), unknownCard(X, weapon, _), println(X), 
+	lowestHeuristic(Y, person), unknownCard(Y, person, _), println(Y), 
+	retractall(myClosestRoomIs(_)), nl, myQueryShownCard.
 
 % Add shown card to the database
 myQueryShownCard :- println('Which card were you shown? (status; none; win)'), read(X), nl, myAddShownCard(X).
