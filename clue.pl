@@ -136,7 +136,7 @@ oppRecordSuggestionLoop(X, I) :- card(X), incHeuristics(X), read(Y), IN is I - 1
 oppRecordSuggestionLoop(_, I) :- read(Y), oppRecordSuggestionLoop(Y, I).
 
 oppGetShownCard :- 
-	println('Did you show a card? (card_name; no)'),
+	println('Did you show a card? (1 card name; no)'),
 	read(X),
 	oppRecordShownCard(X).
 
