@@ -126,12 +126,16 @@ checkState(X) :- X =:= 0, myTurn, nextPlayer(X), playGame.
 checkState(X) :- X =\= 0, oppGetSuggestion, nextPlayer(X), playGame.
 % get suggestion made by player if any
 oppGetSuggestion :- 
-	println('Did opponent make a suggestion?'), 
-	println('Enter done if no suggestions.'),
-	println('Otherwise input each card one by one'),
+	write('Did player '),
+	currentPlayer(Player),
+        write(Player),
+	write('make a suggestion? (input card name until "done."; status; lose)'), 
+	nl, 
 	read(X),
 	oppGetSuggestionCheck(X).
 % check if player suggested
+oppGetSuggestionCheck(lose) :- lose.
+oppGetSuggestionCheck(status) :- status.
 oppGetSuggestionCheck(done).
 oppGetSuggestionCheck(X) :- oppRecordSuggestionLoop(X, 3).
 % record the three objects suggested
@@ -153,7 +157,7 @@ oppRecordShownCard(_) :- read(Y), oppRecordShownCard(Y).
 /* Game Mechanics */
 
 % Player Turn Operations
-nextPlayer(X) :- playernum(Y), X >= Y, Z is 0, setPlayerTurn(Z).
+nextPlayer(X) :- playernum(Y), X >= Y-1, Z is 0, setPlayerTurn(Z).
 nextPlayer(X) :- Z is X + 1, setPlayerTurn(Z).
 setPlayerTurn(X) :- retractall(currentPlayer(_)), assert(currentPlayer(X)).
 
@@ -168,6 +172,10 @@ incHeuristics(X) :-
 	HI is H + 1,
 	assert(unknownCard(X, Y, HI)).
 addShownCard(X) :- currentPlayer(P), assert(shownCard(X, P)).
+
+% Win/Loss
+win :- println('Looks like you won. Congratulations!'), break.
+lose :- println('You lost? Better luck next time!'), break.
 
 
 /* My Turn Mechanics */
@@ -184,7 +192,7 @@ myCheckRoomUnknown(_) :- println('Invalid Input. Try Again.'), myClosestRoom.
 % Ask whether player is in the room yet, if yes, move on to suggesting cards, if no, move on to next player's turn
 myInRoom :- write('Are you in the '), myClosestRoomIs(X), write(X), write(' yet? (y/n)'), nl, read(Y), nl, myInRoomResponse(Y).
 myInRoomResponse(y) :- mySuggestCards.
-myInRoomResponse(n) :- println('Go there.').
+myInRoomResponse(n) :- println('Go there.'), nl.
 myInRoomResponse(_) :- println('Not a valid input.'), myInRoom.
 
 % TODO: use the damn heuristics in unknownCard
@@ -192,9 +200,10 @@ myInRoomResponse(_) :- println('Not a valid input.'), myInRoom.
 mySuggestCards :- println('Suggest these cards: '), myClosestRoomIs(Room), println(Room), unknownCard(X, weapon, _), println(X), unknownCard(Y, person, _), println(Y), retractall(myClosestRoomIs(_)), nl, myQueryShownCard.
 
 % Add shown card to the database
-myQueryShownCard :- println('Which card were you shown? (status)'), read(X), nl, myAddShownCard(X).
+myQueryShownCard :- println('Which card were you shown? (status; none; win)'), read(X), nl, myAddShownCard(X).
 myAddShownCard(status) :- printAllCards, myQueryShownCard.
-myAddShownCard(none) :- println('Well then, you win! Congradulations!').
+myAddShownCard(none) :- win.
+myAddShownCard(win) :- win.
 myAddShownCard(X) :- unknownCard(X,Type,_), retractall(unknownCard(X,_,_)), assert(knownCard(X, Type)).
 myAddShownCard :- println('Not a valid input. Try Again.'), myQueryShownCard.
 
