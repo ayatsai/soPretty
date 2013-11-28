@@ -158,8 +158,9 @@ nextPlayer(X) :- Z is X + 1, setPlayerTurn(Z).
 setPlayerTurn(X) :- retractall(currentPlayer(_)), assert(currentPlayer(X)).
 
 % Record Data Operations
+
 % track cards shown to me
-addKnownCard(X) :- retract(unknownCard(X, Y, _)), assert(knownCard(X, Y)). 
+addKnownCard(X) :- retractall(unknownCard(X, Y, _)), assert(knownCard(X, Y)).
 % increment heuristics of unknown cards
 incHeuristics(X) :- knownCard(X, _).
 incHeuristics(X) :- 
@@ -194,8 +195,8 @@ mySuggestCards :- println('Suggest these cards: '), myClosestRoomIs(Room), print
 % Add shown card to the database
 myQueryShownCard :- println('Which card were you shown? (status)'), read(X), nl, myAddShownCard(X).
 myAddShownCard(status) :- printAllCards, myQueryShownCard.
-myAddShownCard(none) :- println('Well then, you win! Congradulations!').
-myAddShownCard(X) :- unknownCard(X,Type,_), retractall(unknownCard(X,_,_)), assert(knownCard(X, Type)).
+myAddShownCard(none) :- println('Well then, you win! Congratulations!').
+myAddShownCard(X) :- unknownCard(X,Type,_), addKnownCard(X).
 myAddShownCard :- println('Not a valid input. Try Again.'), myQueryShownCard.
 
 /* Output Database Operations */
@@ -221,38 +222,3 @@ printKnownTitle :- println('           ***Known Cards***').
 printRoomsTitle :- println('*==============Rooms==============*'), nl.
 printWeaponsTitle :- println('*=============Weapons=============*'), nl.
 printPeopleTitle :- println('*=============Suspects============*'), nl.
-
-/*
- * Minimal GamePlay
- */
-
-
-/* Track Suggestions */
-
-/* Make Accusations */
-
-/*
- * Intermediate GamePlay
- */
-
-/* Suggestions Inferred by Other Players */
-% should modify heuristics (based on occurrence?)
-
-/* Suggest Next Suggestion */
-% based on location?
-
-/* Suggest Card to Show */
-% track shown cards
-
-% show already showed card to same player
-
-
-/*
- * Advanced GamePlay
- */
-
-/* Assess How Close Others are to Winning */
-% heuristics: known information count?
-
-/* Advice Suggestions for Tricking Others  */
-% make accusations of own card
