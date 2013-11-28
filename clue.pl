@@ -114,13 +114,13 @@ checkState(X) :- X is 0, nextPlayer(X).
 % other player turn
 checkState(X) :- X =\= 0, nextPlayer(X).
 
-nextPlayer(X) :- playernum(Y), X >= Y, Z is 0, setPlayerTurn(Z).
-nextPlayer(X) :- Z is X + 1, setPlayerTurn(Z).
 
 
 /* Game Mechanics */
 
 % Player Turn Operations
+nextPlayer(X) :- playernum(Y), X >= Y, Z is 0, setPlayerTurn(Z).
+nextPlayer(X) :- Z is X + 1, setPlayerTurn(Z).
 setPlayerTurn(X) :- retractall(currentPlayer(_)), assert(currentPlayer(X)).
 
 % Record Data Operations
