@@ -22,7 +22,7 @@
 % list of shown cards to other players
 :- dynamic oppShownCard/2.
 % list of possible card to show
-:- dyamic oppToShow/2.
+:- dynamic oppToShow/2.
 
 clue :- setup, !, playGame.
 
