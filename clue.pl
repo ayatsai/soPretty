@@ -22,7 +22,7 @@
 % list of shown cards to other players
 :- dynamic oppShownCard/2.
 % list of possible card to show
-:- dyamic oppToShow/2.
+:- dynamic oppToShow/2.
 
 clue :- setup, !, playGame.
 
@@ -130,7 +130,7 @@ setPlayerTurn(X) :- retractall(currentPlayer(_)), assert(currentPlayer(X)).
 % Record Data Operations
 
 % track cards shown to me
-addKnownCard(X) :- retractall(unknownCard(X, Y, _)), assert(knownCard(X, Y)).
+addKnownCard(X) :- unknownCard(X, Y, _), retractall(unknownCard(X, Y, _)), assert(knownCard(X,Y)).
 % increment heuristics of unknown cards
 incHeuristics(X) :- knownCard(X, _).
 incHeuristics(X) :- 
