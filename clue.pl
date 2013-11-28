@@ -27,6 +27,8 @@
 :- dynamic knownCard/2.
 % list of suspects
 :- dynamic unknownCard/3.
+% room player is closest to and should check.
+:- dynamic myClosestRoomIs/1.
 
 
 clue :- setup, !, playGame.
@@ -40,9 +42,11 @@ setup :- resetAll, !, getNumPlayers, !, getStartingCards, !, getStartingPlayerTu
 getNumPlayers :- println('How many people are playing?'), read(X), assert(playernum(X)).
 
 % get cards on hand
-getStartingCards :- println('What cards are in your hand? Enter done. when you are finished.'), read(X), getStartingCardsLoop(X).
+getStartingCards :- println('What cards are in your hand? Enter done. when you are finished. (status)'), read(X), getStartingCardsLoop(X).
 % recorded all cares
 getStartingCardsLoop(done).
+% print the status of all cards
+getStartingCardsLoop(status) :- printAllCards.
 % valid card, record and ask for more 
 getStartingCardsLoop(X) :- card(X), addKnownCard(X), read(Y), getStartingCardsLoop(Y).
 % invalid card, do nothing and ask for more
@@ -67,7 +71,11 @@ getStartingPlayerTurnLoop(X) :-
 	setPlayerTurn(X).
 
 % delete database
-resetAll :- retractall(knownCard(_,_)), retractall(playernum(_)).
+resetAll :- retractall(knownCard(_,_)), 
+	retractall(playernum(_)), 
+	retractall(currentPlayer(_)), 
+	retractall(myClosestRoomIs(_)),
+	assertAllCards.
 
 
 /* Initialize Game Components */
@@ -78,29 +86,30 @@ card(X) :- knownCard(X,_).
 card(_) :- println('Card does not exist').
 
 % initialize all rooms
-unknownCard(kitchen, room, 0).
-unknownCard(patio, room, 0).
-unknownCard(spa, room, 0).
-unknownCard(theatre, room, 0).
-unknownCard(livingroom, room, 0).
-unknownCard(observatory, room, 0).
-unknownCard(hall, room, 0).
-unknownCard(guesthouse, room, 0).
-unknownCard(diningroom, room, 0).
+assertAllCards :-
+	assert(unknownCard(kitchen, room, 0)),
+	assert(unknownCard(patio, room, 0)),
+	assert(unknownCard(spa, room, 0)),
+	assert(unknownCard(theatre, room, 0)),
+	assert(unknownCard(livingroom, room, 0)),
+	assert(unknownCard(observatory, room, 0)),
+	assert(unknownCard(hall, room, 0)),
+	assert(unknownCard(guesthouse, room, 0)),
+	assert(unknownCard(diningroom, room, 0)),
 % initialize all weapons
-unknownCard(knife, weapon, 0).
-unknownCard(candlestick, weapon, 0).
-unknownCard(pistol, weapon, 0).
-unknownCard(rope, weapon, 0).
-unknownCard(bat, weapon, 0).
-unknownCard(axe, weapon, 0).
+	assert(unknownCard(knife, weapon, 0)),
+	assert(unknownCard(candlestick, weapon, 0)),
+	assert(unknownCard(pistol, weapon, 0)),
+	assert(unknownCard(rope, weapon, 0)),
+	assert(unknownCard(bat, weapon, 0)),
+	assert(unknownCard(axe, weapon, 0)),
 % initialize all persons
-unknownCard(mustard, person, 0).
-unknownCard(scarlet, person, 0).
-unknownCard(plum, person, 0).
-unknownCard(green, person, 0).
-unknownCard(white, person, 0).
-unknownCard(peacock, person, 0).
+	assert(unknownCard(mustard, person, 0)),
+	assert(unknownCard(scarlet, person, 0)),
+	assert(unknownCard(plum, person, 0)),
+	assert(unknownCard(green, person, 0)),
+	assert(unknownCard(white, person, 0)),
+	assert(unknownCard(peacock, person, 0)).
 
 
 /* Game Play */
@@ -112,7 +121,7 @@ checkState(X) :- X is 0, myTurn, nextPlayer(X).
 
 % add playGame call
 % other player turn
-checkState(X) :- X =\= 0, nextPlayer(X).
+checkState(X) :- X =\= 0, myTurn, nextPlayer(X).
 
 
 
@@ -130,13 +139,32 @@ addKnownCard(X) :- retract(unknownCard(X, Y, _)), assert(knownCard(X, Y)).
 myTurn :- myClosestRoom.
 
 % Ask what room is closest and check whether it's already known
-myClosestRoom :- println('What is the closest room to you?'), read(X), myCheckRoomUnknown(X). 
-myCheckRoomUnknown(X) :- unknownCard(X, room, _), println('That room has not been confirm, check it out!'), myInRoom.
-myCheckRoomUnKnown(X) :- knownCard(X, room), println('You have already been to that room, do not go in'), myClosestRoom. 
+myClosestRoom :- myClosestRoomIs(_), myInRoom.
+myClosestRoom :- println('What is the closest room to you? (status)'), read(X), nl, myCheckRoomUnknown(X). 
+myCheckRoomUnknown(status) :- printAllCards, myClosestRoom.
+myCheckRoomUnknown(X) :- unknownCard(X, room, _), println('That room has not been confirm, check it out!'), retractall(myClosestRoomIs(X)), assert(myClosestRoomIs(X)), !, myInRoom.
+myCheckRoomUnknown(X) :- knownCard(X,room), println('You have already been to that room, enter the next closest.'), myClosestRoom. 
+myCheckRoomUnknown(_) :- println('Invalid Input. Try Again.'), myClosestRoom. 
 
-myInRoom.
+% Ask whether player is in the room yet, if yes, move on to suggesting cards, if no, move on to next player's turn
+myInRoom :- write('Are you in the '), myClosestRoomIs(X), write(X), write(' yet? (y/n)'), nl, read(Y), nl, myInRoomResponse(Y).
+myInRoomResponse(y) :- mySuggestCards.
+myInRoomResponse(n) :- println('Go there.').
+myInRoomResponse(_) :- println('Not a valid input.'), myInRoom.
+
+% TODO: use the damn heuristics in unknownCard
+% Give card suggestions, ask which card is shown.
+mySuggestCards :- println('Suggest these cards: '), myClosestRoomIs(Room), println(Room), unknownCard(X, weapon, _), println(X), unknownCard(Y, person, _), println(Y), retractall(myClosestRoomIs(_)), nl, myQueryShownCard.
+
+% Add shown card to the database
+myQueryShownCard :- println('Which card were you shown? (status)'), read(X), nl, myAddShownCard(X).
+myAddShownCard(status) :- printAllCards, myQueryShownCard.
+myAddShownCard(none) :- println('Well then, you win! Congradulations!').
+myAddShownCard(X) :- unknownCard(X,Type,_), retractall(unknownCard(X,_,_)), assert(knownCard(X, Type)).
+myAddShownCard :- println('Not a valid input. Try Again.'), myQueryShownCard.
+
 /* Output Database Operations */
-
+status :- printAllCards.
 printAllCards :- printAllKnownCards, printAllUnknownCards.
 printAllUnknownCards :- printUnknownTitle, printAllUnknownRooms, printAllUnknownWeapons, printAllUnknownPeople.
 printAllKnownCards :- printKnownTitle, printAllKnownRooms, printAllKnownWeapons, printAllKnownPeople.
