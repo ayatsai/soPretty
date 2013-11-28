@@ -29,7 +29,7 @@
 :- dynamic unknownCard/2.
 
 
-clue :- setup, !, startGame.
+clue :- setup, !, playGame.
 
 /* Setup Game */
 
@@ -46,27 +46,25 @@ getStartingCardsLoop(done).
 % valid card, record and ask for more 
 getStartingCardsLoop(X) :- card(X), addKnownCard(X), read(Y), getStartingCardsLoop(Y).
 % invalid card, do nothing and ask for more
-getStartingCardsLoop(X) :- read(Y), getStartingCardsLoop(Y).
+getStartingCardsLoop(_) :- read(Y), getStartingCardsLoop(Y).
 
 % Get Starting Player Index
 getStartingPlayerTurn :- 
-	println('Whos turn is it? (Player 0 is on your left if going clockwise'), 
+	println('Whos turn is it? (Player after you is 1 and increment until current player, enter 0 for you)'), 
 	read(X), 
 	getStartingPlayerTurnLoop(X).
 % invalid player index input
 getStartingPlayerTurnLoop(X) :- 
 	playernum(Y), 
-	X >= Y, 
+	X > Y, 
 	getStartingPlayerTurn.
 % invalid player index input
 getStartingPlayerTurnLoop(X) :- 
-	playernum(Y), 
 	X < 0, 
 	getStartingPlayerTurn.
 % valide player index, record
 getStartingPlayerTurnLoop(X) :- 
-	setPlayerTurn(X), 
-	println(lol).
+	setPlayerTurn(X).
 
 % delete database
 resetAll :- retractall(knownCard(_,_)), retractall(playernum(_)).
@@ -106,7 +104,18 @@ unknownCard(peacock, person).
 
 
 /* Game Play */
-startGame.
+playGame :- currentPlayer(X), checkState(X), !.
+
+% my turn
+% add playGame call
+checkState(X) :- X is 0, nextPlayer(X).
+
+% add playGame call
+% other player turn
+checkState(X) :- X =\= 0, nextPlayer(X).
+
+nextPlayer(X) :- playernum(Y), X >= Y, Z is 0, setPlayerTurn(Z).
+nextPlayer(X) :- Z is X + 1, setPlayerTurn(Z).
 
 
 /* Game Mechanics */
