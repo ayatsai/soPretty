@@ -119,13 +119,25 @@ addKnownCard(X) :- retract(unknownCard(X, Y)), assert(knownCard(X, Y)).
 
 /* Output Database Operations */
 
-printAllCards :- printAllRooms, printSeparator, printAllWeapons, printSeparator, printAllPerson.
-printAllRooms :- forall(unknownCard(X, room), println(X)).
-printAllWeapons :- forall(unknownCard(X, weapon), println(X)).
-printAllPerson :- forall(unknownCard(X, person), println(X)).
+printAllCards :- printAllKnownCards, printAllUnknownCards.
+printAllUnknownCards :- printUnknownTitle, printAllUnknownRooms, printAllUnknownWeapons, printAllUnknownPeople.
+printAllKnownCards :- printKnownTitle, printAllKnownRooms, printAllKnownWeapons, printAllKnownPeople.
+
+printAllUnknownRooms :- printRoomsTitle, forall(unknownCard(X, room), println(X)), nl.
+printAllUnknownWeapons :- printWeaponsTitle, forall(unknownCard(X, weapon), println(X)), nl.
+printAllUnknownPeople :- printPeopleTitle, forall(unknownCard(X, person), println(X)), nl.
+
+printAllKnownRooms :- printRoomsTitle, forall(knownCard(X, room), println(X)), nl.
+printAllKnownWeapons :- printWeaponsTitle, forall(knownCard(X, weapon), println(X)), nl.
+printAllKnownPeople :- printPeopleTitle, forall(knownCard(X, person), println(X)), nl.
 
 println(X) :- write(X), nl.
-printSeparator :- write(================================================), nl.
+
+printUnknownTitle :- println('       ***Unknown Cards***').
+printKnownTitle :- println('        ***Known Cards***').
+printRoomsTitle :- println('*=============Rooms===============*'), nl.
+printWeaponsTitle :- println('*============Weapons=============*'), nl.
+printPeopleTitle :- println('*============Suspects=============*'), nl.
 
 /*
  * Minimal GamePlay
